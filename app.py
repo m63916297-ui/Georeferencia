@@ -1,4 +1,3 @@
-"""
 SAFE GeoReport - Sistema de Gestión de Incidentes Georreferenciados
 ====================================================================
 
@@ -230,7 +229,6 @@ class GeoapifyService:
 
 
 geo_service = GeoapifyService()
-
 
 # =============================================================================
 # ALMACENAMIENTO (JSON)
