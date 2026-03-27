@@ -1,17 +1,24 @@
-# GeoReport Provider
+# 🛡️ SAFE GeoReport - Sistema de Gestión de Incidentes
 
-Sistema de gestión y reporte de incidentes georreferenciados con Streamlit y Geoapify API.
+**Inteligencia Segura y Siempre Activa**
 
-## API de Geoapify (del archivo Geo APIKEY.txt)
+---
 
-**API Key:** `b4be52d95c1543b99864371eb4562a37`
+## Información de la API (Basado en Geo APIKEY.txt)
 
-### URLs de la API:
-- **Geocodificación:** `https://api.geoapify.com/v1/geocode/search?text={direccion}&apiKey={apiKey}`
-- **Geocodificación Inversa:** `https://api.geoapify.com/v1/geocode/reverse?lat={lat}&lon={lon}&apiKey={apiKey}`
-- **Tiles de Mapa:** `https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?apiKey={apiKey}`
+### API Key
+```
+b4be52d95c1543b99864371eb4562a37
+```
 
-### Ejemplo de código (del archivo original):
+### URLs de la API
+| Servicio | URL |
+|----------|-----|
+| Geocodificación | `https://api.geoapify.com/v1/geocode/search?text={direccion}&apiKey={apiKey}` |
+| Geocodificación Inversa | `https://api.geoapify.com/v1/geocode/reverse?lat={lat}&lon={lon}&apiKey={apiKey}` |
+| Tiles de Mapa | `https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?apiKey={apiKey}` |
+
+### Código Original (del archivo)
 ```python
 import requests
 from requests.structures import CaseInsensitiveDict
@@ -25,85 +32,89 @@ resp = requests.get(url, headers=headers)
 print(resp.status_code)
 ```
 
+---
+
 ## Características
 
-- 📍 **Geocodificación** - API de Geoapify para búsqueda de direcciones
-- 🗺️ **Mapas interactivos** - Tiles de Geoapify (carto)
-- 📝 **Reporte de incidentes** - Formulario completo con geolocalización
+- 🛡️ **SAFE Inteligencia** - Sistema siempre activo
+- 📍 **Geocodificación** - API de Geoapify para direcciones
+- 🗺️ **Mapas Interactivos** - Tiles de Geoapify (carto)
+- 📝 **Reporte de Incidentes** - Formulario completo con geolocalización
 - 📊 **Dashboard** - Estadísticas en tiempo real
-- 🔄 **Gestión de incidentes** - Actualizar estados y eliminar
-- 🔍 **Búsqueda** - Autocompletado de direcciones
+- 🔄 **Gestión** - Actualizar estados y eliminar incidentes
+
+---
 
 ## Estructura del Proyecto
 
 ```
 georeferencia/
-├── app/
-│   ├── __init__.py
-│   ├── models.py          # Modelos de datos
-│   ├── storage.py         # Almacenamiento JSON
-│   ├── geo_service.py     # Servicio Geoapify (usa API del archivo)
-│   ├── utils.py          # Utilidades UI y mapas
-│   └── pages.py          # Páginas de Streamlit
+├── app.py                 # 📌 Aplicación principal (TODO en uno)
+├── requirements.txt       # Dependencias
 ├── data/
-│   └── incidents.json     # Base de datos
+│   └── incidents.json     # Base de datos de incidentes
 ├── .streamlit/
-│   ├── config.toml        # Configuración
+│   ├── config.toml        # Configuración de Streamlit
 │   └── secrets.toml       # Secrets (API Key)
-├── requirements.txt
-├── app.py                 # Entry point
 └── README.md
 ```
 
-## Instalación Local
+---
+
+## Instalación
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
+---
+
 ## Despliegue en Streamlit Cloud
 
-### Paso 1: Subir a GitHub
-Sube toda la carpeta `georeferencia` a un repositorio de GitHub.
+1. **Sube a GitHub:** Toda la carpeta `georeferencia/`
 
-### Paso 2: Configurar en Streamlit Cloud
-1. Ve a [streamlit.io/cloud](https://streamlit.io/cloud)
-2. New app → From existing repo
-3. Configura:
-   - **Repository:** `[tu-usuario]/[tu-repo]`
-   - **Branch:** `main`
-   - **Main file path:** `georeferencia/app.py`
-   - **Requirements file:** `georeferencia/requirements.txt`
+2. **Configura en Streamlit Cloud:**
+   - Main file: `georeferencia/app.py`
+   - Requirements: `georeferencia/requirements.txt`
 
-### Paso 3: Secrets (opcional)
-En Streamlit Cloud, puedes agregar el secret:
-```
-GEOAPIFY_API_KEY = "b4be52d95c1543b99864371eb4562a37"
-```
+3. **Secrets (opcional):**
+   ```
+   GEOAPIFY_API_KEY = "b4be52d95c1543b99864371eb4562a37"
+   ```
 
-O usar el archivo `.streamlit/secrets.toml` ya incluido.
+4. **Deploy:** Click en "Deploy"
 
-### Paso 4: Deploy
-Click en "Deploy"
+---
 
 ## Uso de la Aplicación
 
 | Página | Descripción |
 |--------|-------------|
 | 🏠 Dashboard | Vista general con estadísticas y mapa |
-| 📝 Reportar Incidente | Formulario con 3 métodos de ubicación |
+| 📝 Reportar | Formulario con 3 métodos de ubicación |
 | 🗺️ Mapa | Visualización interactiva con filtros |
-| 📋 Lista | Gestionar incidentes (cambiar estado/eliminar) |
+| 📋 Lista | Gestionar incidentes |
 | 📈 Estadísticas | Gráficos y métricas |
 | ⚙️ Configuración | Prueba de conexión API |
 
-## Categorías y Severidad
+---
 
-**Categorías:** Seguridad, Infraestructura, Servicios, Ambiental, Tránsito, Otro
+## SAFE Inteligencia - Características
 
-**Severidad:** Bajo (verde), Medio (naranja), Alto (rojo), Crítico (rojo oscuro)
+- 🔒 **Seguridad** - Sistema robusto y estable
+- ⚡ **Siempre Activo** - Disponibilidad 24/7
+- 🧠 **Inteligencia** - Análisis de datos en tiempo real
+- 🔗 **Integración** - API de Geoapify conectada
 
 ---
 
-**GeoReport Provider v1.0.0** - © 2026
+## API Key y Credenciales
+
+- **API Key:** `b4be52d95c1543b99864371eb4562a37`
+- **Provider:** Geoapify
+- **Tipo:** Geocoding API
+
+---
+
+**🛡️ SAFE GeoReport v1.0.0** - © 2026 SAFE Inteligencia Segura
