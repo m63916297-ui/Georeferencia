@@ -1,13 +1,24 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from typing import List, Dict, Any
-from folium.plugins import MarkerCluster
+from typing import List, Dict, Any, Optional
+from folium.plugins import MarkerCluster, Fullscreen
 import folium
 from .models import Incident, SeverityLevel, IncidentCategory
 
 
+GEOAPIFY_API_KEY = "b4be52d95c1543b99864371eb4562a37"
+
 CATEGORY_ICONS = {
+    "seguridad": "lock",
+    "infraestructura": "building",
+    "servicios": "cogs",
+    "ambiental": "leaf",
+    "transito": "car",
+    "otro": "map-marker",
+}
+
+CATEGORY_EMOJI = {
     "seguridad": "🔒",
     "infraestructura": "🏗️",
     "servicios": "⚙️",
@@ -29,6 +40,9 @@ STATUS_LABELS = {
     "resuelto": "✅ Resuelto",
     "cerrado": "🔒 Cerrado",
 }
+
+DEFAULT_MAP_CENTER = [4.5709, -74.2973]
+DEFAULT_ZOOM_START = 10
 
 
 def init_session_state():
@@ -137,37 +151,78 @@ def render_sidebar():
     return choice
 
 
-def create_incident_map(incidents: List[Incident], center: List[float] = None):
-    if center is None:
-        center = [4.5709, -74.2973]
+def get_geoapify_tiles(api_key: str = None) -> str:
+    if api_key is None:
+        api_key = GEOAPIFY_API_KEY
+    return f"https://maps.geoapify.com/v1/tile/carto/{{z}}/{{x}}/{{y}}.png?apiKey={api_key}"
 
-    m = folium.Map(location=center, zoom_start=10, tiles="cartodbpositron")
+
+def create_incident_map(
+    incidents: List[Incident],
+    center: List[float] = None,
+    zoom: int = DEFAULT_ZOOM_START,
+    api_key: str = None,
+):
+    if center is None:
+        center = DEFAULT_MAP_CENTER.copy()
+
+    m = folium.Map(
+        location=center,
+        zoom_start=zoom,
+        tiles=get_geoapify_tiles(api_key),
+        attr='&copy; <a href="https://www.geoapify.com/">Geoapify</a>',
+    )
+
+    Fullscreen(position="topright").add_to(m)
 
     if not incidents:
         return m
 
     for incident in incidents:
         if incident.location and "latitude" in incident.location:
+            lat = incident.location.get("latitude", 0)
+            lon = incident.location.get("longitude", 0)
+
+            if lat == 0 and lon == 0:
+                continue
+
+            category_emoji = CATEGORY_EMOJI.get(incident.category, "📌")
+            severity_color = SEVERITY_COLORS.get(incident.severity, "blue")
+
             popup_content = f"""
-            <b>{incident.title}</b><br>
-            <i>{CATEGORY_ICONS.get(incident.category, "📌")} {incident.category.upper()}</i><br>
-            <b>Severidad:</b> {incident.severity}<br>
-            <b>Estado:</b> {incident.status}<br>
-            <hr>
-            <small>{incident.description[:100]}...</small>
+            <div style="font-family: Arial, sans-serif; min-width: 200px;">
+                <h4 style="margin: 0 0 10px 0; color: #1E88E5;">{incident.title}</h4>
+                <p style="margin: 5px 0;"><strong>📁 Categoría:</strong> {category_emoji} {incident.category.upper()}</p>
+                <p style="margin: 5px 0;"><strong>⚠️ Severidad:</strong> <span style="color:{severity_color}; font-weight:bold;">{incident.severity.upper()}</span></p>
+                <p style="margin: 5px 0;"><strong>📊 Estado:</strong> {STATUS_LABELS.get(incident.status, incident.status)}</p>
+                <hr style="margin: 10px 0;">
+                <p style="margin: 5px 0; font-size: 12px;"><strong>📝 Descripción:</strong></p>
+                <p style="margin: 5px 0; font-size: 11px; color: #666;">{incident.description[:150]}{"..." if len(incident.description) > 150 else ""}</p>
+                <hr style="margin: 10px 0;">
+                <p style="margin: 5px 0; font-size: 10px; color: #999;">📍 {incident.location.get("address", "Dirección no disponible")}</p>
+                <p style="margin: 5px 0; font-size: 10px; color: #999;">🗺️ ({lat:.6f}, {lon:.6f})</p>
+            </div>
             """
 
             folium.Marker(
-                location=[
-                    incident.location["latitude"],
-                    incident.location["longitude"],
-                ],
-                popup=folium.Popup(popup_content, max_width=300),
+                location=[lat, lon],
+                popup=folium.Popup(popup_content, max_width=350),
+                tooltip=f"{category_emoji} {incident.title}",
                 icon=folium.Icon(
-                    color=SEVERITY_COLORS.get(incident.severity, "blue"),
+                    color=severity_color,
                     icon=CATEGORY_ICONS.get(incident.category, "info-sign"),
                     prefix="fa",
                 ),
+            ).add_to(m)
+
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=8,
+                color=severity_color,
+                fill=True,
+                fillColor=severity_color,
+                fillOpacity=0.3,
+                weight=2,
             ).add_to(m)
 
     return m
@@ -175,32 +230,33 @@ def create_incident_map(incidents: List[Incident], center: List[float] = None):
 
 def render_incident_card(incident: Incident):
     severity_color = SEVERITY_COLORS.get(incident.severity, "blue")
+    category_emoji = CATEGORY_EMOJI.get(incident.category, "📌")
 
-    with st.expander(f"{CATEGORY_ICONS.get(incident.category, '📌')} {incident.title}"):
+    with st.expander(f"{category_emoji} {incident.title}"):
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown(f"**Categoría:** {incident.category}")
+            st.markdown(f"**📁 Categoría:** {incident.category}")
             st.markdown(
-                f"**Severidad:** :{severity_color}[{incident.severity.upper()}]"
+                f"**⚠️ Severidad:** :{severity_color}[{incident.severity.upper()}]"
             )
             st.markdown(
-                f"**Estado:** {STATUS_LABELS.get(incident.status, incident.status)}"
+                f"**📊 Estado:** {STATUS_LABELS.get(incident.status, incident.status)}"
             )
         with col2:
-            st.markdown(f"**Reportero:** {incident.reporter_name}")
-            st.markdown(f"**Contacto:** {incident.reporter_contact}")
+            st.markdown(f"**👤 Reportero:** {incident.reporter_name}")
+            st.markdown(f"**📞 Contacto:** {incident.reporter_contact}")
             st.markdown(
-                f"**Fecha:** {datetime.fromisoformat(incident.created_at).strftime('%Y-%m-%d %H:%M')}"
+                f"**📅 Fecha:** {datetime.fromisoformat(incident.created_at).strftime('%Y-%m-%d %H:%M')}"
             )
 
         st.markdown("---")
-        st.markdown(f"**Descripción:** {incident.description}")
+        st.markdown(f"**📝 Descripción:** {incident.description}")
 
         if incident.location:
-            st.markdown(f"**Dirección:** {incident.location.get('address', 'N/A')}")
-            st.markdown(
-                f"**Coordenadas:** ({incident.location.get('latitude', 0):.4f}, {incident.location.get('longitude', 0):.4f})"
-            )
+            st.markdown(f"**📍 Dirección:** {incident.location.get('address', 'N/A')}")
+            lat = incident.location.get("latitude", 0)
+            lon = incident.location.get("longitude", 0)
+            st.markdown(f"**🗺️ Coordenadas:** ({lat:.6f}, {lon:.6f})")
 
 
 def get_category_options():
