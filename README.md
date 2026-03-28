@@ -1,6 +1,6 @@
 # 🛡️ SAFE GeoReport
 
-Sistema de Gestión de Incidentes Georreferenciados con Segmentación Estratégica de Variables de Reporte.
+Sistema de Gestión de Incidentes Georreferenciados basado en la **SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE**.
 
 ---
 
@@ -26,54 +26,79 @@ Sistema de Gestión de Incidentes Georreferenciados con Segmentación Estratégi
 
 ---
 
-## Componentes Principales
+## Segmentación Estratégica de Variables
 
-### 1. Capa de Presentación (Frontend)
-- **Framework:** Streamlit
-- **Mapas:** Folium + streamlit-folium
-- **Visualizaciones:** Pandas + Streamlit
-
-### 2. Capa de Lógica de Negocio
-- **Segmentación Estratégica:** Sistema de categorización de incidentes
-- **Gestión de Estados:** Workflow de incidentes (recibido → resuelto → cerrado)
-- **Cálculo de Prioridades:** Asignación automática según severidad e impacto
-
-### 3. Capa de Datos
-- **Almacenamiento:** JSON (incidentes.json)
-- **Modelos de Datos:** Incident, Location, ReportFilters
-
-### 4. Capa de Servicios Externos
-- **Geocodificación:** Conversión de direcciones a coordenadas
-- **Mapas Interactivos:** Visualización de incidentes en mapa
+El sistema implementa la **SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE** con tres niveles de categorización:
 
 ---
 
-## Segmentación Estratégica de Variables
+### 🎯 1. Panel de Acceso Directo (Variables de Mayor Interés Territorial)
 
-El sistema implementa una segmentación estratégica para el reporte de incidentes:
+*6 categorías de alta frecuencia de ocurrencia e impacto directo en la percepción de seguridad ciudadana.*
 
-### 📁 Categorías
-| ID | Nombre | Descripción |
-|----|--------|-------------|
-| seguridad | Seguridad | Incidentes de seguridad ciudadana |
-| infraestructura | Infraestructura | Problemas de infraestructura urbana |
-| servicios | Servicios | Fallas en servicios públicos |
-| ambiental | Ambiental | Incidentes ambientales |
-| transito | Tránsito | Incidentes de tráfico y transporte |
-| emergencias | Emergencias | Situaciones de emergencia |
+| ID | Nombre | Icono | Descripción |
+|----|--------|-------|-------------|
+| hurto_personas | Hurto a Personas | 🎯 | Reportes rápidos de robos sin violencia extrema |
+| hurto_comercios | Hurto a Comercios | 🏪 | Incidentes de robo en establecimientos locales |
+| hurto_vehiculos | Hurto a Vehículos | 🚗 | Incluye partes de vehículos y motocicletas |
+| hurto_residencias | Hurto a Residencias | 🏠 | Violación de la propiedad privada |
+| violencia_intrafamiliar | Violencia Intrafamiliar | ⚠️ | Reportes de agresiones dentro del núcleo hogar |
+| extorsion | Extorsión | 💰 | Cobros indebidos o vacunas en sectores comerciales |
 
-### 📝 Subcategorías
-Cada categoría contiene 8 subcategorías específicas para detalhado de incidentes.
+---
+
+### ⚖️ 2. Incidentes de Convivencia (Ley 1801/2016)
+
+*Listado detallado en orden alfabético para reportes comunitarios. Diseñado para reportes comunitarios con opción de anonimato.*
+
+| ID | Nombre | Icono | Descripción |
+|----|--------|-------|-------------|
+| alteraciones_orden | Alteraciones al Orden Público | 📢 | Reportes de comportamiento disruptivo en espacios públicos |
+| extorsion_menor | Extorsión Menor | 💵 | Cobros indebidos o vacunas en sectores comerciales |
+| hurto_comercios_conv | Hurto a Comercios | 🏪 | Incidentes de robo en establecimientos locales |
+| hurto_personas_conv | Hurto a Personas | 🎯 | Reportes rápidos de robos sin violencia extrema |
+| hurto_residencias_conv | Hurto a Residencias | 🏠 | Violación de la propiedad privada |
+| hurto_vehiculos_conv | Hurto a Vehículos | 🚗 | Incluye partes de vehículos y motocicletas |
+| lesiones_personales | Lesiones Personales | 🩹 | Conflictos físicos menores |
+| rinas_callejeras | Riñas Callejeras | 👊 | Peleas en vía pública |
+| ruido_excesivo | Ruido Excesivo | 🔊 | Contaminación auditiva que afecta la paz vecinal |
+| vandalismo | Vandalismo | 🔨 | Daños a bienes públicos o privados |
+| violencia_intrafamiliar_conv | Violencia Intrafamiliar | ⚠️ | Reportes de agresiones dentro del núcleo hogar |
+| otro_convivencia | Otro (¿Cuál?) | 📝 | Campo de texto abierto para casos no tipificados |
+
+---
+
+### ⚖️ 3. Delitos de Bajo y Mediano Impacto (Ley 599/2000)
+
+*Para el flujo formal de denuncias, el lenguaje se ajusta a términos legales para facilitar la vinculación con la Fiscalía y la Policía.*
+
+| ID | Nombre | Icono | Descripción |
+|----|--------|-------|-------------|
+| delitos_sexuales | Delitos Sexuales Menores | 🚫 | Casos que requieren manejo de evidencia confidencial |
+| extorsion_delito | Extorsión | 💰 | Denuncia formal para investigación institucional |
+| hurto_personas_delito | Hurto a Personas | 🎯 | Modalidades de atraco o raponazo bajo tipificación legal |
+| hurto_residencias_delito | Hurto a Residencias | 🏠 | Ingreso ilegal con fines de lucro |
+| hurto_vehiculos_delito | Hurto a Vehículos/Motocicletas | 🏍️ | Robo de vehículos motorizados para rastreo judicial |
+| lesiones_personales_delito | Lesiones Personales | 🩹 | Agresiones físicas documentadas para procesos legales |
+| violencia_genero | Violencia de Género | ⚧️ | Denuncias específicas protegidas por protocolos de seguridad |
+| violencia_intrafamiliar_delito | Violencia Intrafamiliar | ⚠️ | Escalamiento de conflictos domésticos a instancias judiciales |
+| otro_delito | Otro (¿Cuál?) | 📝 | Selección para delitos que no figuren en el menú principal |
+
+---
 
 ### ⚠️ Niveles de Severidad
+
 | Nivel | Color | Descripción |
 |-------|-------|-------------|
-| Crítico | 🔴 Oscuro | Riesgo inmediato a vidas o propiedad |
+| Crítico | ⛔ | Riesgo inmediato a vidas o propiedad |
 | Alto | 🔴 | Impacto significativo requiere atención urgente |
 | Medio | 🟠 | Impacto moderado requiere atención |
-| Bajo | 🟢 | Impacto mínimo |
+| Bajo | 🟢 | Impacto mínimo o cosmético |
+
+---
 
 ### 📊 Estados del Reporte
+
 1. 📥 Recibido
 2. 🔍 Validando
 3. 👤 Asignado
@@ -82,47 +107,17 @@ Cada categoría contiene 8 subcategorías específicas para detalhado de inciden
 6. 🔒 Cerrado
 7. ❌ Rechazado
 
-### 🎯 Prioridades
-| Prioridad | Tiempo de Respuesta |
-|-----------|---------------------|
-| Urgente | 1 día |
-| Alta | 3 días |
-| Media | 7 días |
-| Baja | 15 días |
-
-### 📢 Fuentes de Reporte
-- Ciudadano
-- Cámaras de Seguridad
-- Sensores IoT
-- Línea de Emergencias
-- Portal Web
-- App Móvil
-- Redes Sociales
-
-### 💥 Impacto
-| Nivel | Personas Afectadas |
-|-------|-------------------|
-| Muy Alto | > 1000 |
-| Alto | 100 - 1000 |
-| Medio | 10 - 100 |
-| Bajo | 1 - 10 |
-
 ---
 
-## Estructura de Archivos
+### 📢 Fuentes de Reporte
 
-```
-georeferencia/
-├── app.py                 # Aplicación principal (todo en uno)
-├── requirements.txt       # Dependencias Python
-├── data/
-│   └── incidents.json    # Base de datos de incidentes
-├── .streamlit/
-│   ├── config.toml       # Configuración de Streamlit
-│   └── secrets.toml     # Secrets (API keys)
-├── README.md
-└── Geo APIKEY.txt       # Archivo de API (referencia)
-```
+- 👤 Ciudadano
+- 📹 Cámaras de Seguridad
+- 📡 Sensores IoT
+- 📞 Línea de Emergencias
+- 🌐 Portal Web
+- 📱 App Móvil
+- 📢 Redes Sociales
 
 ---
 
@@ -131,28 +126,32 @@ georeferencia/
 ### 🏠 Dashboard
 - Vista general del sistema
 - Métricas principales (total, pendientes, en proceso, resueltos)
-- Mapa de incidentes recientes
-- Estadísticas por categoría y severidad
+- Mapa de incidentes centrado en Medellín
+- Estadísticas por categoría, convivencia y delitos
 
 ### 📝 Nuevo Reporte
-- Formulario completo con segmentación estratégica
-- Selección de categoría y subcategoría
-- Determinación de severidad y prioridad
-- Estimación de impacto
-- Ubicación geográfica (3 métodos):
+- Formulario basado en la Segmentación Estratégica
+- **Paso 1:** Panel de Acceso Directo (6 categorías rápidas)
+- **Paso 2:** Tipo de Reporte (Rápido, Convivencia, Delito)
+- **Paso 3:** Selección del tipo específico de incidente
+- **Paso 4:** Datos del reportante (opción anónima)
+- **Paso 5:** Severidad y fuente del reporte
+- **Paso 6:** Descripción detallada
+- **Paso 7:** Ubicación geográfica (3 métodos):
   - Búsqueda por dirección
   - Ubicación por IP
   - Selección en mapa interactivo
+- **Timestamp automático y georreferenciación**
 
 ### 🗺️ Mapa Global
 - Visualización de todos los incidentes
-- Filtros múltiples (categoría, severidad, estado, prioridad)
+- Filtros por categoría, severidad y estado
 - Mapas interactivos con popups informativos
-- Marcadores por severidad
+- Centrado en Medellín por defecto
 
 ### 📋 Todos los Reportes
 - Lista completa de incidentes
-- Filtros y búsqueda
+- Filtros por categoría y estado
 - Cambio de estado
 - Eliminación de reportes
 - Detalle completo de cada incidente
@@ -161,11 +160,29 @@ georeferencia/
 - Estadísticas detalladas
 - Gráficos por categoría
 - Distribución por severidad
-- Historial reciente
 
 ### ⚙️ Configuración
 - Información del sistema
 - Prueba de conexión API
+
+---
+
+## Estructura de Archivos
+
+```
+georeferencia/
+├── app.py                 # Aplicación principal
+├── requirements.txt       # Dependencias Python
+├── README.md              # Este archivo
+├── data/
+│   └── incidents.json    # Base de datos de incidentes
+├── .streamlit/
+│   ├── config.toml       # Configuración de Streamlit
+│   └── secrets.toml     # Secrets (API keys)
+├── .env.example          # Variables de entorno ejemplo
+├── Geo APIKEY.txt       # Archivo de API (referencia)
+└── SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE.docx
+```
 
 ---
 
@@ -183,35 +200,15 @@ streamlit run app.py
 
 La aplicación estará disponible en: `http://localhost:8501`
 
-### Despliegue en Streamlit Cloud
-
-1. **Preparar repositorio:**
-   - Crear repositorio en GitHub
-   - Subir la carpeta `georeferencia/`
-
-2. **Configurar Streamlit Cloud:**
-   - Main file: `georeferencia/app.py`
-   - Requirements: `georeferencia/requirements.txt`
-
-3. **Deploy:**
-   - Click en "Deploy"
-
 ---
 
-## Flujo de Trabajo
+## Nota de Implementación
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Usuario    │────►│   Reporte    │────►│  Validación  │
-│  reporta     │     │   creado     │     │   automática │
-└──────────────┘     └──────────────┘     └──────────────┘
-                                                │
-                                                ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Cerrado    │◄────│   Resuelto    │◄────│   En Proceso │
-│   (fin)      │     │   (confirmado)│     │  (asignado)  │
-└──────────────┘     └──────────────┘     └──────────────┘
-```
+> Cada selección en los listados de categorías **dispara automáticamente**:
+> - **Timestamp:** Fecha y hora exactas del reporte
+> - **Georreferenciación:** Coordenadas exactas del incidente
+> 
+> Esto asegura que la data sea **"Verificable para IA"** y útil para el análisis de patrones delictivos en tiempo real.
 
 ---
 
@@ -220,9 +217,9 @@ La aplicación estará disponible en: `http://localhost:8501`
 - **Framework UI:** Streamlit
 - **Mapas:** Folium + Geoapify
 - **Storage:** JSON local
-- **API:** RESTful
-- **Authentication:** No requerida (demo)
+- **API:** Geoapify RESTful
 - **Responsive:** Sí
+- **Localización:** Medellín, Colombia
 
 ---
 
