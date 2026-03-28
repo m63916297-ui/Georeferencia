@@ -1035,64 +1035,91 @@ def page_report():
     st.markdown("---")
     st.subheader("📍 4. Ubicación del Incidente")
 
-    st.markdown("Escriba una dirección o lugar en Medellín y área metropolitana:")
+    st.markdown("**Seleccione la ubicación en el mapa o busque una dirección:**")
 
-    with st.form("location_form", clear_on_submit=True):
+    col_search, col_coords, col_btn = st.columns([2, 1, 1])
+
+    with col_search:
         address_input = st.text_input(
-            "Dirección / Lugar",
+            "Dirección",
             placeholder="Ej: Cra 43A #1-50, Medellín",
-            help="Ingrese una dirección o lugar conocido",
+            label_visibility="collapsed",
         )
 
-        col_search_btn, col_clear_btn = st.columns([1, 4])
-        with col_search_btn:
-            search_clicked = st.form_submit_button(
-                "🔍 Buscar", use_container_width=True
-            )
+    with col_coords:
+        lat_input = st.number_input(
+            "Latitud", value=6.2442, format="%.6f", key="lat_input"
+        )
+    with col_coords:
+        lon_input = st.number_input(
+            "Longitud", value=-75.5812, format="%.6f", key="lon_input"
+        )
 
-    if search_clicked and address_input:
-        with st.spinner("Buscando ubicación..."):
-            loc = geo_service.geocode(address_input)
+    current_lat = st.session_state.get("selected_lat", lat_input)
+    current_lon = st.session_state.get("selected_lon", lon_input)
+
+    map_center = [current_lat, current_lon]
+    m = create_map([], map_center, zoom=14)
+    clicked = st_folium(
+        m, width=800, height=400, key="location_map", returned_objects=["last_clicked"]
+    )
+
+    if clicked and clicked.get("last_clicked"):
+        current_lat = clicked["last_clicked"]["lat"]
+        current_lon = clicked["last_clicked"]["lng"]
+        st.session_state.selected_lat = current_lat
+        st.session_state.selected_lon = current_lon
+
+    col_info, col_confirm = st.columns([3, 1])
+
+    with col_info:
+        if address_input:
+            with st.spinner("Buscando..."):
+                loc = geo_service.geocode(address_input)
+                if loc:
+                    current_lat = loc["latitude"]
+                    current_lon = loc["longitude"]
+                    st.session_state.selected_lat = current_lat
+                    st.session_state.selected_lon = current_lon
+                    st.session_state.address_result = loc.get("address", "")
+                    st.success(f"📍 {st.session_state.address_result}")
+                else:
+                    st.error("No se encontró la dirección")
+
+        if st.session_state.get("selected_lat"):
+            st.markdown(
+                f"**🗺️ Coordenadas:** `{st.session_state.selected_lat:.6f}, {st.session_state.selected_lon:.6f}`"
+            )
+            if st.session_state.get("address_result"):
+                st.markdown(f"**📍 Dirección:** {st.session_state.address_result}")
+
+    with col_confirm:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button(
+            "✅ Confirmar Ubicación", type="primary", use_container_width=True
+        ):
+            loc = geo_service.reverse_geocode(current_lat, current_lon)
             if loc:
-                st.session_state.pending_location = loc
+                st.session_state.pending_location = {
+                    **loc,
+                    "latitude": current_lat,
+                    "longitude": current_lon,
+                }
                 st.session_state.location_confirmed = True
-                st.success(f"✅ Ubicación encontrada: {loc.get('address', '')}")
+                st.success("✅ Ubicación confirmada!")
             else:
-                st.error("❌ No se encontró la dirección. Intente con otra dirección.")
+                st.session_state.pending_location = {
+                    "address": f"Lat: {current_lat:.6f}, Lon: {current_lon:.6f}",
+                    "latitude": current_lat,
+                    "longitude": current_lon,
+                }
+                st.session_state.location_confirmed = True
+                st.success("✅ Ubicación confirmada por coordenadas!")
 
     if st.session_state.location_confirmed and st.session_state.pending_location:
         loc = st.session_state.pending_location
         lat, lon = loc.get("latitude", 0), loc.get("longitude", 0)
-
-        st.markdown(f"**📍 Ubicación:** {loc.get('address', 'N/A')}")
-        st.markdown(f"**🗺️ Coordenadas:** `{lat:.6f}, {lon:.6f}`")
-
-        m = create_map(
-            [
-                {
-                    "location": loc,
-                    "title": "Ubicación del incidente",
-                    "category": category,
-                    "severity": "medio",
-                }
-            ],
-            [lat, lon],
-            zoom=16,
-        )
-        st_folium(m, width=700, height=350, key="preview_map")
-
-        col_confirm, col_clear = st.columns(2)
-        with col_confirm:
-            st.success("✅ Ubicación lista para registrar")
-        with col_clear:
-            if st.button("🗑️ Limpiar ubicación"):
-                st.session_state.pending_location = None
-                st.session_state.location_confirmed = False
-                st.rerun()
-    else:
-        m = create_map([], DEFAULT_MAP_CENTER, zoom=12)
-        st_folium(m, width=700, height=300, key="default_map")
-        st.info("💡 Busque una dirección o seleccione un punto en el mapa")
+        st.success(f"📍 Ubicación lista: {loc.get('address', f'{lat:.6f}, {lon:.6f}')}")
 
     st.markdown("---")
     st.subheader("📝 5. Datos del Reporte")
