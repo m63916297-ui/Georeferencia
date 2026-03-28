@@ -780,8 +780,6 @@ class IncidentStorage:
             "by_category": self._count_by(incidents, "category"),
             "by_severity": self._count_by(incidents, "severity"),
             "by_status": self._count_by(incidents, "status"),
-            "by_priority": self._count_by(incidents, "priority"),
-            "by_impact": self._count_by(incidents, "impact"),
         }
 
     def _count_by(self, incidents: List[Dict], field: str) -> Dict:
@@ -1369,23 +1367,23 @@ def page_map():
     st.markdown("Visualización geoespacial de todos los reportes")
     st.markdown("*Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE*")
 
+    all_incidents = storage.get_all()
+
     if "last_incident_id" in st.session_state and st.session_state.last_incident_id:
         st.success(
             f"📍 Último incidente registrado: `{st.session_state.last_incident_id}`"
         )
-        last_inc = storage.get_all()
         last_inc = [
-            i for i in last_inc if i.get("id") == st.session_state.last_incident_id
+            i for i in all_incidents if i.get("id") == st.session_state.last_incident_id
         ]
         if last_inc:
             last_loc = last_inc[0].get("location", {})
-            if last_loc.get("latitude") and last_loc.get("longitude"):
+            if last_loc and last_loc.get("latitude") and last_loc.get("longitude"):
                 st.session_state.map_center = [
                     last_loc["latitude"],
                     last_loc["longitude"],
                 ]
 
-    all_incidents = storage.get_all()
     incidents_with_location = [
         i
         for i in all_incidents
@@ -1394,17 +1392,17 @@ def page_map():
     ]
 
     st.markdown("---")
-    st.subheader("📍 Estadísticas del Mapa")
-
     col_stats1, col_stats2, col_stats3, col_stats4 = st.columns(4)
     with col_stats1:
-        st.metric("Total Registrados", len(all_incidents))
+        st.metric("Total", len(all_incidents))
     with col_stats2:
-        st.metric("Con Geolocalización", len(incidents_with_location))
+        st.metric("Con Mapa", len(incidents_with_location))
     with col_stats3:
         st.metric("Sin Ubicación", len(all_incidents) - len(incidents_with_location))
     with col_stats4:
-        activos = len([i for i in all_incidents if i.get("status") != "cerrado"])
+        activos = len(
+            [i for i in all_incidents if i.get("status") not in ["cerrado", "resuelto"]]
+        )
         st.metric("Activos", activos)
 
     st.markdown("---")
@@ -1440,29 +1438,21 @@ def page_map():
         incidents = [i for i in incidents if i.get("status") == f_stat]
 
     st.markdown("---")
+    st.markdown(f"### 📍 Incidentes en el Mapa: {len(incidents)}")
+
     col_map, col_legend = st.columns([4, 1])
 
     with col_legend:
         st.markdown("##### 🗺️ Leyenda")
-        st.markdown("**Por Severidad:**")
+        st.markdown("**Severidad:**")
         st.markdown("🟢 Bajo")
         st.markdown("🟠 Medio")
         st.markdown("🔴 Alto")
         st.markdown("⛔ Crítico")
 
-        st.markdown("---")
-        st.markdown("**Por Estado:**")
-        st.markdown("📥 Recibido")
-        st.markdown("🔍 Validando")
-        st.markdown("👤 Asignado")
-        st.markdown("⚙️ En Proceso")
-        st.markdown("✅ Resuelto")
-
     with col_map:
-        st.markdown(f"### 📍 Incidentes en el Mapa: {len(incidents)}")
-
         if incidents:
-            m = create_map(incidents, st.session_state.map_center, zoom=12)
+            m = create_map(incidents, st.session_state.map_center, zoom=13)
             st_folium(m, width=900, height=600, key="full_map")
         else:
             m = create_map([], DEFAULT_MAP_CENTER)
