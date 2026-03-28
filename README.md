@@ -8,18 +8,18 @@ Sistema de Gestión de Incidentes Georreferenciados basado en la **SEGMENTACIÓN
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      SAFE GEOREPORT                             │
+│                      SAFE GEOREPORT                              │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   Frontend  │  │   Backend   │  │   Storage   │             │
-│  │  (Streamlit)│◄─►│  (Python)   │◄─►│   (JSON)    │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│         │                 │                 │                    │
-│         └─────────────────┼─────────────────┘                    │
-│                           ▼                                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
+│  │   Frontend  │  │   Backend   │  │   Storage   │          │
+│  │  (Streamlit)│◄─►│  (Python)   │◄─►│   (JSON)    │          │
+│  └─────────────┘  └─────────────┘  └─────────────┘          │
+│         │                 │                 │                     │
+│         └─────────────────┼─────────────────┘                     │
+│                           ▼                                       │
 │              ┌─────────────────────────┐                         │
 │              │    Geoapify API         │                         │
-│              │  (Geocodificación)      │                         │
+│              │  (Geocodificación)     │                         │
 │              └─────────────────────────┘                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -49,21 +49,16 @@ El sistema implementa la **SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORT
 
 ### ⚖️ 2. Incidentes de Convivencia (Ley 1801/2016)
 
-*Listado detallado en orden alfabético para reportes comunitarios. Diseñado para reportes comunitarios con opción de anonimato.*
+*Listado detallado para reportes comunitarios. Diseñado para reportes comunitarios con opción de anonimato.*
 
 | ID | Nombre | Icono | Descripción |
 |----|--------|-------|-------------|
 | alteraciones_orden | Alteraciones al Orden Público | 📢 | Reportes de comportamiento disruptivo en espacios públicos |
 | extorsion_menor | Extorsión Menor | 💵 | Cobros indebidos o vacunas en sectores comerciales |
-| hurto_comercios_conv | Hurto a Comercios | 🏪 | Incidentes de robo en establecimientos locales |
-| hurto_personas_conv | Hurto a Personas | 🎯 | Reportes rápidos de robos sin violencia extrema |
-| hurto_residencias_conv | Hurto a Residencias | 🏠 | Violación de la propiedad privada |
-| hurto_vehiculos_conv | Hurto a Vehículos | 🚗 | Incluye partes de vehículos y motocicletas |
 | lesiones_personales | Lesiones Personales | 🩹 | Conflictos físicos menores |
 | rinas_callejeras | Riñas Callejeras | 👊 | Peleas en vía pública |
 | ruido_excesivo | Ruido Excesivo | 🔊 | Contaminación auditiva que afecta la paz vecinal |
 | vandalismo | Vandalismo | 🔨 | Daños a bienes públicos o privados |
-| violencia_intrafamiliar_conv | Violencia Intrafamiliar | ⚠️ | Reportes de agresiones dentro del núcleo hogar |
 | otro_convivencia | Otro (¿Cuál?) | 📝 | Campo de texto abierto para casos no tipificados |
 
 ---
@@ -76,12 +71,8 @@ El sistema implementa la **SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORT
 |----|--------|-------|-------------|
 | delitos_sexuales | Delitos Sexuales Menores | 🚫 | Casos que requieren manejo de evidencia confidencial |
 | extorsion_delito | Extorsión | 💰 | Denuncia formal para investigación institucional |
-| hurto_personas_delito | Hurto a Personas | 🎯 | Modalidades de atraco o raponazo bajo tipificación legal |
-| hurto_residencias_delito | Hurto a Residencias | 🏠 | Ingreso ilegal con fines de lucro |
-| hurto_vehiculos_delito | Hurto a Vehículos/Motocicletas | 🏍️ | Robo de vehículos motorizados para rastreo judicial |
 | lesiones_personales_delito | Lesiones Personales | 🩹 | Agresiones físicas documentadas para procesos legales |
 | violencia_genero | Violencia de Género | ⚧️ | Denuncias específicas protegidas por protocolos de seguridad |
-| violencia_intrafamiliar_delito | Violencia Intrafamiliar | ⚠️ | Escalamiento de conflictos domésticos a instancias judiciales |
 | otro_delito | Otro (¿Cuál?) | 📝 | Selección para delitos que no figuren en el menú principal |
 
 ---
@@ -125,45 +116,94 @@ El sistema implementa la **SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORT
 
 ### 🏠 Dashboard
 - Vista general del sistema
-- Métricas principales (total, pendientes, en proceso, resueltos)
-- Mapa de incidentes centrado en Medellín
-- Estadísticas por categoría, convivencia y delitos
+- Métricas principales (total, activos)
+- Mapa de todos los incidentes centrado en Medellín
+- Panel lateral con conteos por categoría
 
 ### 📝 Nuevo Reporte
-- Formulario basado en la Segmentación Estratégica
-- **Paso 1:** Panel de Acceso Directo (6 categorías rápidas)
-- **Paso 2:** Tipo de Reporte (Rápido, Convivencia, Delito)
-- **Paso 3:** Selección del tipo específico de incidente
-- **Paso 4:** Datos del reportante (opción anónima)
-- **Paso 5:** Severidad y fuente del reporte
-- **Paso 6:** Descripción detallada
-- **Paso 7:** Ubicación geográfica (3 métodos):
-  - Búsqueda por dirección
-  - Ubicación por IP
-  - Selección en mapa interactivo
-- **Timestamp automático y georreferenciación**
+
+Formulario guiado con segmentación estratégica:
+
+1. **Panel de Acceso Directo** - Muestra las 6 categorías principales
+2. **Tipo de Reporte** - Seleccionar entre:
+   - 🎯 Panel de Acceso Directo (6 categorías)
+   - ⚖️ Incidentes de Convivencia (Ley 1801/2016)
+   - ⚖️ Delitos (Ley 599/2000)
+3. **Categoría** - Cambia dinámicamente según el tipo de reporte
+4. **Ubicación del Incidente**:
+   - Campo de búsqueda de dirección
+   - Coordenadas editables (Latitud/Longitud)
+   - Mapa interactivo para seleccionar ubicación
+   - **Botón "Confirmar Ubicación"** para validar
+5. **Datos del Reporte**:
+   - Título, Reportante (opción anónima), Contacto
+   - Severidad, Fuente
+   - Descripción detallada
+6. **Envío** con timestamp automático y georreferenciación
 
 ### 🗺️ Mapa Global
-- Visualización de todos los incidentes
-- Filtros por categoría, severidad y estado
-- Mapas interactivos con popups informativos
-- Centrado en Medellín por defecto
+
+- Visualización de todos los incidentes georreferenciados
+- Estadísticas del mapa (Total, Con Ubicación, Activos)
+- Filtros por categoría y severidad
+- Marcadores interactivos con popups
+- Centrado en Medellín
+- Colores por severidad
 
 ### 📋 Todos los Reportes
+
 - Lista completa de incidentes
-- Filtros por categoría y estado
+- Filtros por categoría
+- Detalle de cada incidente (ubicación, coordenadas)
 - Cambio de estado
 - Eliminación de reportes
-- Detalle completo de cada incidente
 
 ### 📈 Analytics
+
 - Estadísticas detalladas
 - Gráficos por categoría
 - Distribución por severidad
 
 ### ⚙️ Configuración
+
 - Información del sistema
 - Prueba de conexión API
+- Detalles de segmentación estratégica
+
+---
+
+## Flujo de Registro de Incidentes
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    REGISTRO DE INCIDENTE                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. Seleccionar Tipo de Reporte                             │
+│     └─► Panel de Acceso Directo / Convivencia / Delito       │
+│                                                              │
+│  2. Seleccionar Categoría (dinámico según tipo)             │
+│                                                              │
+│  3. Ubicación del Incidente                                 │
+│     ├─► Buscar dirección (Geoapify)                         │
+│     ├─► Editar coordenadas manualmente                       │
+│     ├─► Seleccionar en mapa interactivo                     │
+│     └─► ✅ Confirmar Ubicación                             │
+│                                                              │
+│  4. Datos del Reporte                                       │
+│     ├─► Título, Reportante, Contacto                        │
+│     ├─► Severidad, Fuente                                  │
+│     └─► Descripción detallada                              │
+│                                                              │
+│  5. Enviar Reporte                                          │
+│     └─► Timestamp automático + Georreferenciación           │
+│                                                              │
+│  6. Verificación                                            │
+│     ├─► Mapa con ubicación exacta del incidente             │
+│     └─► Botón para ver en Mapa Global                      │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -180,7 +220,7 @@ georeferencia/
 │   ├── config.toml       # Configuración de Streamlit
 │   └── secrets.toml     # Secrets (API keys)
 ├── .env.example          # Variables de entorno ejemplo
-├── Geo APIKEY.txt       # Archivo de API (referencia)
+├── Geo APIKEY.txt        # Archivo de API (referencia)
 └── SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE.docx
 ```
 
@@ -204,10 +244,11 @@ La aplicación estará disponible en: `http://localhost:8501`
 
 ## Nota de Implementación
 
-> Cada selección en los listados de categorías **dispara automáticamente**:
+> Cada reporte **dispara automáticamente**:
 > - **Timestamp:** Fecha y hora exactas del reporte
 > - **Georreferenciación:** Coordenadas exactas del incidente
-> 
+> - **Confirmación de Ubicación:** Validación antes de registrar
+>
 > Esto asegura que la data sea **"Verificable para IA"** y útil para el análisis de patrones delictivos en tiempo real.
 
 ---
@@ -217,7 +258,7 @@ La aplicación estará disponible en: `http://localhost:8501`
 - **Framework UI:** Streamlit
 - **Mapas:** Folium + Geoapify
 - **Storage:** JSON local
-- **API:** Geoapify RESTful
+- **API:** Geoapify RESTful (Geocodificación y Búsqueda)
 - **Responsive:** Sí
 - **Localización:** Medellín, Colombia
 
