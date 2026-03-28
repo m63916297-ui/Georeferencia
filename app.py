@@ -42,134 +42,6 @@ DATA_FILE = "georeferencia/data/incidents.json"
 
 
 # =============================================================================
-# ZONAS DE MEDELLÍN Y ÁREA METROPOLITANA
-# =============================================================================
-
-ZONAS_MEDELLIN = {
-    "medellin_centro": {
-        "nombre": "Centro de Medellín",
-        "lat": 6.2447,
-        "lon": -75.5745,
-        "comunas": ["La Candelaria", "Los Nietos", "Barrio Pablo Escobar"],
-    },
-    "el_poblado": {
-        "nombre": "El Poblado",
-        "lat": 6.2081,
-        "lon": -75.5686,
-        "comunas": ["El Poblado", "Manrique", "La Mansion"],
-    },
-    "laureles": {
-        "nombre": "Laureles - Estadio",
-        "lat": 6.2565,
-        "lon": -75.5918,
-        "comunas": ["Laureles", "Estadio", "Bolivia"],
-    },
-    "belen": {
-        "nombre": "Belén - Fatima",
-        "lat": 6.2278,
-        "lon": -75.6044,
-        "comunas": ["Belén", "Fatima", "Granada"],
-    },
-    "envigado": {
-        "nombre": "Envigado",
-        "lat": 6.1758,
-        "lon": -75.5586,
-        "comunas": ["Envigado", "El Rosario", "La Magnolia"],
-    },
-    "itagui": {
-        "nombre": "Itagüí",
-        "lat": 6.1847,
-        "lon": -75.6006,
-        "comunas": ["Itagüí", "La Mayorca", "El Rosario"],
-    },
-    "sabaneta": {
-        "nombre": "Sabaneta",
-        "lat": 6.1502,
-        "lon": -75.6168,
-        "comunas": ["Sabaneta", "Aures", "La Doctora"],
-    },
-    "bello": {
-        "nombre": "Bello",
-        "lat": 6.3373,
-        "lon": -75.5576,
-        "comunas": ["Bello", "Niquía", "Cabañas"],
-    },
-    "copacabana": {
-        "nombre": "Copacabana",
-        "lat": 6.3463,
-        "lon": -75.5426,
-        "comunas": ["Copacabana", "San Jose", "La Gabriela"],
-    },
-    "girardota": {
-        "nombre": "Girardota",
-        "lat": 6.3772,
-        "lon": -75.4945,
-        "comunas": ["Girardota", "Centro", "El Raizal"],
-    },
-    "barbosa": {
-        "nombre": "Barbosa",
-        "lat": 6.4367,
-        "lon": -75.5269,
-        "comunas": ["Barbosa", "Centro", "San Jose"],
-    },
-    "la_estrella": {
-        "nombre": "La Estrella",
-        "lat": 6.1298,
-        "lon": -75.6316,
-        "comunas": ["La Estrella", "El Pedrero", "San Joaquin"],
-    },
-    "caldas": {
-        "nombre": "Caldas",
-        "lat": 6.0925,
-        "lon": -75.6357,
-        "comunas": ["Caldas", "La Paz", "El Progreso"],
-    },
-    "santa_elena": {
-        "nombre": "Santa Elena",
-        "lat": 6.2730,
-        "lon": -75.5030,
-        "comunas": ["Santa Elena", "Palmitas", "San Cristobal"],
-    },
-    "la_candelaria": {
-        "nombre": "La Candelaria - Prado",
-        "lat": 6.2550,
-        "lon": -75.5620,
-        "comunas": ["La Candelaria", "Prado", "Junín"],
-    },
-    "manrique": {
-        "nombre": "Manrique",
-        "lat": 6.2820,
-        "lon": -75.5380,
-        "comunas": ["Manrique", "Las Granjas", "Campo Valdes"],
-    },
-    "robledo": {
-        "nombre": "Robledo",
-        "lat": 6.2690,
-        "lon": -75.5950,
-        "comunas": ["Robledo", "El Volador", "Barrio Cerro"],
-    },
-    "guayabal": {
-        "nombre": "Guayabal",
-        "lat": 6.2270,
-        "lon": -75.5570,
-        "comunas": ["Guayabal", "San Guillermo", "Cristo Rey"],
-    },
-    "la_america": {
-        "nombre": "La América",
-        "lat": 6.2650,
-        "lon": -75.6070,
-        "comunas": ["La América", "Floresta", "Santa Monica"],
-    },
-    "san_javier": {
-        "nombre": "San Javier",
-        "lat": 6.2480,
-        "lon": -75.6360,
-        "comunas": ["San Javier", "La Palmeta", "El Salado"],
-    },
-}
-
-
-# =============================================================================
 # SEGMENTACIÓN ESTRATÉGICA DE VARIABLES DE REPORTE
 # =============================================================================
 
@@ -814,8 +686,6 @@ def init_session():
         ]
     if "navigate_to" not in st.session_state:
         st.session_state.navigate_to = None
-    if "selected_zona_name" not in st.session_state:
-        st.session_state.selected_zona_name = "Medellín"
     if "last_incident_id" not in st.session_state:
         st.session_state.last_incident_id = None
 
@@ -1165,69 +1035,64 @@ def page_report():
     st.markdown("---")
     st.subheader("📍 4. Ubicación del Incidente")
 
-    col_zona_select, col_zona_info = st.columns([1, 1])
+    st.markdown("Escriba una dirección o lugar en Medellín y área metropolitana:")
 
-    zona_list = list(ZONAS_MEDELLIN.items())
-    zona_options = [""] + [k for k, v in zona_list]
-    zona_map = {k: v["nombre"] for k, v in zona_list}
-
-    with col_zona_select:
-        selected_zona = st.selectbox(
-            "Seleccione zona:",
-            zona_options,
-            format_func=lambda x: (
-                zona_map.get(x, "Seleccionar zona...") if x else "Seleccionar zona..."
-            ),
+    with st.form("location_form", clear_on_submit=True):
+        address_input = st.text_input(
+            "Dirección / Lugar",
+            placeholder="Ej: Cra 43A #1-50, Medellín",
+            help="Ingrese una dirección o lugar conocido",
         )
 
-    zona_lat = DEFAULT_MAP_CENTER[0]
-    zona_lon = DEFAULT_MAP_CENTER[1]
-
-    if selected_zona:
-        zona_lat = ZONAS_MEDELLIN[selected_zona]["lat"]
-        zona_lon = ZONAS_MEDELLIN[selected_zona]["lon"]
-        st.session_state.map_center = [zona_lat, zona_lon]
-        st.session_state.selected_zona_name = ZONAS_MEDELLIN[selected_zona]["nombre"]
-        with col_zona_info:
-            st.success(f"📍 {ZONAS_MEDELLIN[selected_zona]['nombre']}")
-            st.markdown(
-                f"**Comunas:** {', '.join(ZONAS_MEDELLIN[selected_zona].get('comunas', []))}"
+        col_search_btn, col_clear_btn = st.columns([1, 4])
+        with col_search_btn:
+            search_clicked = st.form_submit_button(
+                "🔍 Buscar", use_container_width=True
             )
 
-    m = create_map([], st.session_state.map_center, zoom=14)
-    clicked = st_folium(
-        m, width=750, height=450, key="zona_map", returned_objects=["last_clicked"]
-    )
-
-    lat, lon = zona_lat, zona_lon
-    if clicked.get("last_clicked"):
-        lat, lon = clicked["last_clicked"]["lat"], clicked["last_clicked"]["lng"]
-        st.session_state.map_center = [lat, lon]
-
-    st.markdown("---")
-    col_lat, col_lon, col_btn = st.columns([1, 1, 1])
-
-    with col_lat:
-        lat = st.number_input("Latitud", value=lat, format="%.6f", key="lat_incident")
-    with col_lon:
-        lon = st.number_input("Longitud", value=lon, format="%.6f", key="lon_incident")
-    with col_btn:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("✅ Confirmar Ubicación", use_container_width=True):
-            loc = geo_service.reverse_geocode(lat, lon)
+    if search_clicked and address_input:
+        with st.spinner("Buscando ubicación..."):
+            loc = geo_service.geocode(address_input)
             if loc:
-                st.session_state.pending_location = {
-                    **loc,
-                    "latitude": lat,
-                    "longitude": lon,
-                }
+                st.session_state.pending_location = loc
                 st.session_state.location_confirmed = True
+                st.success(f"✅ Ubicación encontrada: {loc.get('address', '')}")
+            else:
+                st.error("❌ No se encontró la dirección. Intente con otra dirección.")
 
     if st.session_state.location_confirmed and st.session_state.pending_location:
         loc = st.session_state.pending_location
-        st.success(
-            f"✅ Ubicación confirmada: Lat {loc.get('latitude', 0):.6f}, Lon {loc.get('longitude', 0):.6f}"
+        lat, lon = loc.get("latitude", 0), loc.get("longitude", 0)
+
+        st.markdown(f"**📍 Ubicación:** {loc.get('address', 'N/A')}")
+        st.markdown(f"**🗺️ Coordenadas:** `{lat:.6f}, {lon:.6f}`")
+
+        m = create_map(
+            [
+                {
+                    "location": loc,
+                    "title": "Ubicación del incidente",
+                    "category": category,
+                    "severity": "medio",
+                }
+            ],
+            [lat, lon],
+            zoom=16,
         )
+        st_folium(m, width=700, height=350, key="preview_map")
+
+        col_confirm, col_clear = st.columns(2)
+        with col_confirm:
+            st.success("✅ Ubicación lista para registrar")
+        with col_clear:
+            if st.button("🗑️ Limpiar ubicación"):
+                st.session_state.pending_location = None
+                st.session_state.location_confirmed = False
+                st.rerun()
+    else:
+        m = create_map([], DEFAULT_MAP_CENTER, zoom=12)
+        st_folium(m, width=700, height=300, key="default_map")
+        st.info("💡 Busque una dirección o seleccione un punto en el mapa")
 
     st.markdown("---")
     st.subheader("📝 5. Datos del Reporte")
