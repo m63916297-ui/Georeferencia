@@ -625,7 +625,9 @@ class IncidentStorage:
     def get_all(self) -> List[Dict]:
         return self._read()
 
-    def update(self, incident_id: str, updates: Dict) -> Optional[Dict]:
+    def update(self, incident_id: Optional[str], updates: Dict) -> Optional[Dict]:
+        if not incident_id:
+            return None
         incidents = self._read()
         for i, inc in enumerate(incidents):
             if inc.get("id") == incident_id:
@@ -636,7 +638,9 @@ class IncidentStorage:
                 return inc
         return None
 
-    def delete(self, incident_id: str) -> bool:
+    def delete(self, incident_id: Optional[str]) -> bool:
+        if not incident_id:
+            return False
         incidents = self._read()
         initial = len(incidents)
         incidents = [i for i in incidents if i.get("id") != incident_id]
@@ -1353,30 +1357,33 @@ def page_list():
             )
 
             col_upd, col_del = st.columns(2)
+            inc_id = inc.get("id", "")
 
             with col_upd:
-                new_status = st.selectbox(
-                    "Cambiar Estado",
-                    [e["id"] for e in SegmentacionReporte.Estado.todos()],
-                    index=[e["id"] for e in SegmentacionReporte.Estado.todos()].index(
-                        inc.get("status", "recibido")
+                if inc_id:
+                    new_status = st.selectbox(
+                        "Cambiar Estado",
+                        [e["id"] for e in SegmentacionReporte.Estado.todos()],
+                        index=[
+                            e["id"] for e in SegmentacionReporte.Estado.todos()
+                        ].index(inc.get("status", "recibido"))
+                        if inc.get("status", "recibido")
+                        in [e["id"] for e in SegmentacionReporte.Estado.todos()]
+                        else 0,
+                        key=f"stat_{inc_id}_{i}",
                     )
-                    if inc.get("status", "recibido")
-                    in [e["id"] for e in SegmentacionReporte.Estado.todos()]
-                    else 0,
-                    key=f"stat_{inc.get('id')}_{i}",
-                )
-                if new_status != inc.get("status"):
-                    if st.button(f"✅ Actualizar", key=f"btn_{inc.get('id')}_{i}"):
-                        storage.update(inc.get("id"), {"status": new_status})
-                        st.success("Estado actualizado")
-                        st.rerun()
+                    if new_status != inc.get("status"):
+                        if st.button("✅ Actualizar", key=f"btn_{inc_id}_{i}"):
+                            storage.update(inc_id, {"status": new_status})
+                            st.success("Estado actualizado")
+                            st.rerun()
 
             with col_del:
-                if st.button(f"🗑️ Eliminar", key=f"del_{inc.get('id')}_{i}"):
-                    storage.delete(inc.get("id"))
-                    st.success("Eliminado")
-                    st.rerun()
+                if inc_id:
+                    if st.button("🗑️ Eliminar", key=f"del_{inc_id}_{i}"):
+                        storage.delete(inc_id)
+                        st.success("Eliminado")
+                        st.rerun()
 
 
 def page_stats():
