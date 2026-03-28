@@ -1192,345 +1192,84 @@ def page_report():
         )
 
         st.markdown("---")
-        st.subheader("📍 4. Ubicación del Incidente (Georreferenciación Automática)")
+        st.subheader("📍 4. Ubicación del Incidente")
 
-        method = st.radio(
-            "Método de ubicación:",
-            [
-                "📍 Seleccionar zona",
-                "🔍 Buscar dirección",
-                "📡 Mi ubicación (IP)",
-                "🗺️ Seleccionar en mapa",
-            ],
-            horizontal=True,
+        st.markdown("##### 🏘️ Seleccione la zona en el mapa")
+        st.markdown(
+            "*Haga clic en el mapa para seleccionar la ubicación exacta del incidente*"
         )
 
-        location_data = {}
+        col_zona_select, col_zona_info = st.columns([1, 1])
 
-        if method == "📍 Seleccionar zona":
-            st.markdown("##### 🏘️ Zonas de Medellín y Área Metropolitana")
+        zona_list = list(ZONAS_MEDELLIN.items())
+        zona_options = [""] + [k for k, v in zona_list]
+        zona_map = {k: v["nombre"] for k, v in zona_list}
 
-            zona_list = list(ZONAS_MEDELLIN.items())
-            zona_options = [("", "Seleccionar zona...")] + [
-                (k, v["nombre"]) for k, v in zona_list
-            ]
-            zona_ids = [z[0] for z in zona_options]
-            zona_labels = [z[1] for z in zona_options]
-            zona_map = dict(zip(zona_ids, zona_labels))
-
+        with col_zona_select:
             selected_zona = st.selectbox(
-                "Seleccione una zona:",
-                zona_ids,
-                format_func=lambda x: zona_map.get(x, ""),
-            )
-
-            if selected_zona:
-                zona = ZONAS_MEDELLIN[selected_zona]
-                st.session_state.map_center = [zona["lat"], zona["lon"]]
-                st.markdown(f"**Zona seleccionada:** {zona['nombre']}")
-                st.markdown(f"**Comunas:** {', '.join(zona.get('comunas', []))}")
-
-                col_map, col_info = st.columns([2, 1])
-                with col_map:
-                    m = create_map([], st.session_state.map_center, zoom=14)
-                    clicked = st_folium(
-                        m,
-                        width=500,
-                        height=350,
-                        key="zona_map",
-                        returned_objects=["last_clicked"],
-                    )
-
-                with col_info:
-                    st.markdown("##### 📍 Coordenadas")
-                    lat = zona["lat"]
-                    lon = zona["lon"]
-
-                    if clicked.get("last_clicked"):
-                        lat, lon = (
-                            clicked["last_clicked"]["lat"],
-                            clicked["last_clicked"]["lng"],
-                        )
-
-                    st.write(f"**Latitud:** {lat:.6f}")
-                    st.write(f"**Longitud:** {lon:.6f}")
-
-                    lat = st.number_input(
-                        "Latitud", value=lat, format="%.6f", key="lat_input"
-                    )
-                    lon = st.number_input(
-                        "Longitud", value=lon, format="%.6f", key="lon_input"
-                    )
-
-                if st.form_submit_button("✅ Confirmar ubicación"):
-                    loc = geo_service.reverse_geocode(lat, lon)
-                    if loc:
-                        location_data = {**loc, "latitude": lat, "longitude": lon}
-                        location_data["zona"] = zona["nombre"]
-                        st.session_state.pending_location = location_data
-                        st.session_state.location_confirmed = True
-                        st.success(f"✅ Ubicación confirmada: {zona['nombre']}")
-
-        elif method == "🔍 Buscar dirección":
-            addr = st.text_input(
-                "Dirección:", placeholder="Ej: Cra 43A #1-50, Medellín"
-            )
-            if addr and st.form_submit_button("🔍 Buscar en Geoapify"):
-                with st.spinner("Consultando API de Geoapify..."):
-                    loc = geo_service.geocode(addr)
-                    if loc:
-                        location_data = loc
-                        st.session_state.pending_location = loc
-                        st.session_state.location_confirmed = True
-                        st.success(f"✅ {loc.get('address', '')}")
-                        st.session_state.map_center = [
-                            loc.get("latitude"),
-                            loc.get("longitude"),
-                        ]
-                    else:
-                        st.error("No se encontró la dirección")
-
-        elif method == "📡 Mi ubicación (IP)":
-            if st.form_submit_button("📍 Obtener mi ubicación"):
-                with st.spinner("Obteniendo ubicación..."):
-                    loc = geo_service.get_ip_location()
-                    if loc:
-                        location_data = loc
-                        st.session_state.pending_location = loc
-                        st.session_state.location_confirmed = True
-                        st.success(
-                            f"✅ {loc.get('city', '')}, {loc.get('country', '')}"
-                        )
-                        st.session_state.map_center = [
-                            loc.get("latitude"),
-                            loc.get("longitude"),
-                        ]
-
-        elif method == "🗺️ Seleccionar en mapa":
-            m = create_map([], st.session_state.map_center)
-            clicked = st_folium(
-                m,
-                width=700,
-                height=400,
-                key="sel_map",
-                returned_objects=["last_clicked"],
-            )
-
-            col_lat, col_lon = st.columns(2)
-            with col_lat:
-                lat = st.number_input("Latitud", value=6.2442, format="%.6f")
-            with col_lon:
-                lon = st.number_input("Longitud", value=-75.5812, format="%.6f")
-
-            if clicked.get("last_clicked"):
-                lat, lon = (
-                    clicked["last_clicked"]["lat"],
-                    clicked["last_clicked"]["lng"],
-                )
-
-            if st.form_submit_button("✅ Confirmar ubicación"):
-                loc = geo_service.reverse_geocode(lat, lon)
-                if loc:
-                    location_data = {**loc, "latitude": lat, "longitude": lon}
-                    st.session_state.pending_location = location_data
-                    st.session_state.location_confirmed = True
-
-        if st.session_state.location_confirmed and st.session_state.pending_location:
-            loc = st.session_state.pending_location
-            zona_display = loc.get("zona", "")
-            st.markdown(
-                f"""
-            <div style="background: #E3F2FD; padding: 15px; border-radius: 10px; border-left: 4px solid #1565C0;">
-                <b>📍 Ubicación Confirmada</b><br>
-                {loc.get("address", "N/A")}<br>
-                <small>🏘️ {zona_display} | {loc.get("city", "")} | Lat: {loc.get("latitude", 0):.6f}, Lon: {loc.get("longitude", 0):.6f}</small>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
-
-        location_data = {}
-
-        if method == "📍 Seleccionar zona":
-            st.markdown("##### 🏘️ Zonas de Medellín y Área Metropolitana")
-
-            zona_cols = st.columns(3)
-            zona_keys = list(ZONAS_MEDELLIN.keys())
-
-            for i, zona_id in enumerate(zona_keys[:6]):
-                zona = ZONAS_MEDELLIN[zona_id]
-                with zona_cols[i % 3]:
-                    if st.button(
-                        f"🏠 {zona['nombre']}",
-                        key=f"zona_{zona_id}",
-                        use_container_width=True,
-                    ):
-                        st.session_state.map_center = [zona["lat"], zona["lon"]]
-
-            for i, zona_id in enumerate(zona_keys[6:12]):
-                zona = ZONAS_MEDELLIN[zona_id]
-                with zona_cols[i % 3]:
-                    if st.button(
-                        f"🏢 {zona['nombre']}",
-                        key=f"zona_{zona_id}",
-                        use_container_width=True,
-                    ):
-                        st.session_state.map_center = [zona["lat"], zona["lon"]]
-
-            for i, zona_id in enumerate(zona_keys[12:18]):
-                zona = ZONAS_MEDELLIN[zona_id]
-                with zona_cols[i % 3]:
-                    if st.button(
-                        f"🏙️ {zona['nombre']}",
-                        key=f"zona_{zona_id}",
-                        use_container_width=True,
-                    ):
-                        st.session_state.map_center = [zona["lat"], zona["lon"]]
-
-            st.markdown("##### 🗺️ Mapa de la Zona")
-            m = create_map([], st.session_state.map_center, zoom=14)
-            clicked = st_folium(
-                m,
-                width=700,
-                height=400,
-                key="zona_map",
-                returned_objects=["last_clicked"],
-            )
-
-            selected_zona = st.selectbox(
-                "O seleccione una zona específica:",
-                [""] + list(ZONAS_MEDELLIN.keys()),
+                "Seleccione zona rápida:",
+                zona_options,
                 format_func=lambda x: (
-                    ZONAS_MEDELLIN.get(x, {}).get("nombre", "Seleccionar...")
+                    zona_map.get(x, "Seleccionar zona...")
                     if x
                     else "Seleccionar zona..."
                 ),
             )
 
-            if selected_zona:
-                zona = ZONAS_MEDELLIN[selected_zona]
-                st.session_state.map_center = [zona["lat"], zona["lon"]]
-                m = create_map([], st.session_state.map_center, zoom=14)
-                clicked = st_folium(
-                    m,
-                    width=700,
-                    height=400,
-                    key="zona_map_selected",
-                    returned_objects=["last_clicked"],
+        zona_lat = DEFAULT_MAP_CENTER[0]
+        zona_lon = DEFAULT_MAP_CENTER[1]
+        zona_nombre = "Medellín"
+
+        if selected_zona:
+            zona_lat = ZONAS_MEDELLIN[selected_zona]["lat"]
+            zona_lon = ZONAS_MEDELLIN[selected_zona]["lon"]
+            zona_nombre = ZONAS_MEDELLIN[selected_zona]["nombre"]
+            st.session_state.map_center = [zona_lat, zona_lon]
+            with col_zona_info:
+                st.success(f"📍 {zona_nombre}")
+                st.markdown(
+                    f"**Comunas:** {', '.join(ZONAS_MEDELLIN[selected_zona].get('comunas', []))}"
                 )
 
-            col_lat, col_lon = st.columns(2)
-            lat = st.session_state.map_center[0]
-            lon = st.session_state.map_center[1]
+        m = create_map([], st.session_state.map_center, zoom=14)
+        clicked = st_folium(
+            m, width=750, height=450, key="zona_map", returned_objects=["last_clicked"]
+        )
 
-            if clicked.get("last_clicked"):
-                lat, lon = (
-                    clicked["last_clicked"]["lat"],
-                    clicked["last_clicked"]["lng"],
-                )
+        lat, lon = zona_lat, zona_lon
+        if clicked.get("last_clicked"):
+            lat, lon = clicked["last_clicked"]["lat"], clicked["last_clicked"]["lng"]
 
-            with col_lat:
-                lat = st.number_input(
-                    "Latitud", value=lat, format="%.6f", key="lat_input"
-                )
-            with col_lon:
-                lon = st.number_input(
-                    "Longitud", value=lon, format="%.6f", key="lon_input"
-                )
+        st.markdown("---")
+        col_lat, col_lon, col_btn = st.columns([1, 1, 1])
 
-            if st.form_submit_button("✅ Confirmar ubicación"):
-                loc = geo_service.reverse_geocode(lat, lon)
-                if loc:
-                    location_data = {**loc, "latitude": lat, "longitude": lon}
-                    zona_nombre = next(
-                        (
-                            z["nombre"]
-                            for z_id, z in ZONAS_MEDELLIN.items()
-                            if abs(z["lat"] - lat) < 0.01 and abs(z["lon"] - lon) < 0.01
-                        ),
-                        "Medellín",
-                    )
-                    location_data["zona"] = zona_nombre
-                    st.session_state.pending_location = location_data
-                    st.session_state.location_confirmed = True
-                    st.success(f"✅ Ubicación confirmada: {zona_nombre}")
-
-        elif method == "🔍 Buscar dirección":
-            addr = st.text_input(
-                "Dirección:", placeholder="Ej: Cra 43A #1-50, Medellín"
+        with col_lat:
+            lat = st.number_input(
+                "Latitud", value=lat, format="%.6f", key="lat_incident"
             )
-            if addr and st.form_submit_button("🔍 Buscar en Geoapify"):
-                with st.spinner("Consultando API de Geoapify..."):
-                    loc = geo_service.geocode(addr)
-                    if loc:
-                        location_data = loc
-                        st.session_state.pending_location = loc
-                        st.session_state.location_confirmed = True
-                        st.success(f"✅ {loc.get('address', '')}")
-                        st.session_state.map_center = [
-                            loc.get("latitude"),
-                            loc.get("longitude"),
-                        ]
-                    else:
-                        st.error("No se encontró la dirección")
-
-        elif method == "📡 Mi ubicación (IP)":
-            if st.form_submit_button("📍 Obtener mi ubicación"):
-                with st.spinner("Obteniendo ubicación..."):
-                    loc = geo_service.get_ip_location()
-                    if loc:
-                        location_data = loc
-                        st.session_state.pending_location = loc
-                        st.session_state.location_confirmed = True
-                        st.success(
-                            f"✅ {loc.get('city', '')}, {loc.get('country', '')}"
-                        )
-                        st.session_state.map_center = [
-                            loc.get("latitude"),
-                            loc.get("longitude"),
-                        ]
-
-        elif method == "🗺️ Seleccionar en mapa":
-            m = create_map([], st.session_state.map_center)
-            clicked = st_folium(
-                m,
-                width=700,
-                height=400,
-                key="sel_map",
-                returned_objects=["last_clicked"],
+        with col_lon:
+            lon = st.number_input(
+                "Longitud", value=lon, format="%.6f", key="lon_incident"
             )
 
-            col_lat, col_lon = st.columns(2)
-            with col_lat:
-                lat = st.number_input("Latitud", value=6.2442, format="%.6f")
-            with col_lon:
-                lon = st.number_input("Longitud", value=-75.5812, format="%.6f")
-
-            if clicked.get("last_clicked"):
-                lat, lon = (
-                    clicked["last_clicked"]["lat"],
-                    clicked["last_clicked"]["lng"],
-                )
-
-            if st.form_submit_button("✅ Confirmar ubicación"):
+        with col_btn:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.form_submit_button(
+                "✅ Confirmar Ubicación", use_container_width=True
+            ):
                 loc = geo_service.reverse_geocode(lat, lon)
                 if loc:
-                    location_data = {**loc, "latitude": lat, "longitude": lon}
-                    st.session_state.pending_location = location_data
+                    st.session_state.pending_location = {
+                        **loc,
+                        "latitude": lat,
+                        "longitude": lon,
+                    }
                     st.session_state.location_confirmed = True
 
         if st.session_state.location_confirmed and st.session_state.pending_location:
             loc = st.session_state.pending_location
-            zona_display = loc.get("zona", "")
-            st.markdown(
-                f"""
-            <div style="background: #E3F2FD; padding: 15px; border-radius: 10px; border-left: 4px solid #1565C0;">
-                <b>📍 Ubicación Confirmada</b><br>
-                {loc.get("address", "N/A")}<br>
-                <small>🏘️ {zona_display} | {loc.get("city", "")} | Lat: {loc.get("latitude", 0):.6f}, Lon: {loc.get("longitude", 0):.6f}</small>
-            </div>
-            """,
-                unsafe_allow_html=True,
+            st.success(
+                f"✅ Ubicación confirmada: Lat {loc.get('latitude', 0):.6f}, Lon {loc.get('longitude', 0):.6f}"
             )
 
         st.markdown("---")
