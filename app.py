@@ -680,6 +680,12 @@ def init_session():
         st.session_state.pending_location = None
     if "location_confirmed" not in st.session_state:
         st.session_state.location_confirmed = False
+    if "tipo_reporte" not in st.session_state:
+        st.session_state.tipo_reporte = "rapido"
+    if "report_category" not in st.session_state:
+        st.session_state.report_category = SegmentacionReporte.Categoria.todas()[0][
+            "id"
+        ]
 
 
 def render_header():
@@ -954,64 +960,73 @@ def page_report():
                 unsafe_allow_html=True,
             )
 
-    with st.form("report_form", clear_on_submit=False):
-        st.markdown("---")
-        st.subheader("📋 2. Tipo de Reporte")
+    st.markdown("---")
+    st.subheader("📋 2. Tipo de Reporte")
 
-        tipo_options = {
-            "rapido": "🎯 Panel de Acceso Directo (6 categorías principales)",
-            "convivencia": "⚖️ Incidentes de Convivencia (Ley 1801/2016)",
-            "delito": "⚖️ Delitos de Bajo/Mediano Impacto (Ley 599/2000)",
-        }
-        tipo_reporte = st.selectbox(
-            "Seleccione el tipo de reporte *",
-            list(tipo_options.keys()),
-            format_func=lambda x: tipo_options[x],
+    tipo_options = {
+        "rapido": "🎯 Panel de Acceso Directo (6 categorías principales)",
+        "convivencia": "⚖️ Incidentes de Convivencia (Ley 1801/2016)",
+        "delito": "⚖️ Delitos de Bajo/Mediano Impacto (Ley 599/2000)",
+    }
+
+    tipo_reporte = st.selectbox(
+        "Seleccione el tipo de reporte *",
+        list(tipo_options.keys()),
+        format_func=lambda x: tipo_options[x],
+        index=list(tipo_options.keys()).index(st.session_state.tipo_reporte),
+    )
+
+    if tipo_reporte != st.session_state.tipo_reporte:
+        st.session_state.tipo_reporte = tipo_reporte
+        if tipo_reporte == "rapido":
+            st.session_state.report_category = SegmentacionReporte.Categoria.todas()[0][
+                "id"
+            ]
+        elif tipo_reporte == "convivencia":
+            st.session_state.report_category = SegmentacionReporte.Convivencia.todos()[
+                0
+            ]["id"]
+        else:
+            st.session_state.report_category = SegmentacionReporte.Delitos.todos()[0][
+                "id"
+            ]
+        st.rerun()
+
+    st.markdown("---")
+    st.subheader("📋 3. Categoría del Incidente")
+
+    if tipo_reporte == "rapido":
+        cats = SegmentacionReporte.Categoria.todas()
+        category_ids = [c["id"] for c in cats]
+        category_labels = [f"{c['icono']} {c['nombre']}" for c in cats]
+        category_map = dict(zip(category_ids, category_labels))
+        category = st.selectbox(
+            "Seleccione la categoría *",
+            category_ids,
+            format_func=lambda x: category_map.get(x, x),
+        )
+    elif tipo_reporte == "convivencia":
+        cats = SegmentacionReporte.Convivencia.todos()
+        category_ids = [c["id"] for c in cats]
+        category_labels = [f"{c['icono']} {c['nombre']}" for c in cats]
+        category_map = dict(zip(category_ids, category_labels))
+        category = st.selectbox(
+            "Seleccione el tipo de incidente *",
+            category_ids,
+            format_func=lambda x: category_map.get(x, x),
+        )
+    else:
+        cats = SegmentacionReporte.Delitos.todos()
+        category_ids = [c["id"] for c in cats]
+        category_labels = [f"{c['icono']} {c['nombre']}" for c in cats]
+        category_map = dict(zip(category_ids, category_labels))
+        category = st.selectbox(
+            "Seleccione el tipo de delito *",
+            category_ids,
+            format_func=lambda x: category_map.get(x, x),
         )
 
-        if tipo_reporte == "rapido":
-            category_options = [
-                (c["id"], c["icono"], c["nombre"])
-                for c in SegmentacionReporte.Categoria.todas()
-            ]
-            category_labels = [f"{c[1]} {c[2]}" for c in category_options]
-            category_ids = [c[0] for c in category_options]
-            category = st.selectbox(
-                "Categoría *",
-                category_ids,
-                format_func=lambda x: next(
-                    (f"{c[1]} {c[2]}" for c in category_options if c[0] == x), ""
-                ),
-            )
-        elif tipo_reporte == "convivencia":
-            conv_options = [
-                (c["id"], c["icono"], c["nombre"], c["ley"])
-                for c in SegmentacionReporte.Convivencia.todos()
-            ]
-            category_labels = [f"{c[1]} {c[2]}" for c in conv_options]
-            category_ids = [c[0] for c in conv_options]
-            category = st.selectbox(
-                "Tipo de Incidente de Convivencia *",
-                category_ids,
-                format_func=lambda x: next(
-                    (f"{c[1]} {c[2]}" for c in conv_options if c[0] == x), ""
-                ),
-            )
-        else:
-            del_options = [
-                (c["id"], c["icono"], c["nombre"], c["ley"])
-                for c in SegmentacionReporte.Delitos.todos()
-            ]
-            category_labels = [f"{c[1]} {c[2]}" for c in del_options]
-            category_ids = [c[0] for c in del_options]
-            category = st.selectbox(
-                "Tipo de Delito *",
-                category_ids,
-                format_func=lambda x: next(
-                    (f"{c[1]} {c[2]}" for c in del_options if c[0] == x), ""
-                ),
-            )
-
+    with st.form("report_form", clear_on_submit=False):
         title = st.text_input(
             "Título del Incidente *", placeholder="Descripción breve del incidente"
         )
@@ -1023,7 +1038,7 @@ def page_report():
                 placeholder="Nombre del reportante (o 'Anónimo' para reportes comunitarios)",
             )
             contact = st.text_input(
-                "Contacto *", placeholder="Teléfono o email (opcional si es anónimo)"
+                "Contacto", placeholder="Teléfono o email (opcional si es anónimo)"
             )
 
         with col2:
@@ -1048,14 +1063,8 @@ def page_report():
             placeholder="Describa el incidente con detalle...",
         )
 
-        if tipo_reporte in ["convivencia", "delito"]:
-            otro_texto = st.text_input(
-                "Especifique (si seleccionó 'Otro')",
-                placeholder="Describa el tipo de incidente...",
-            )
-
         st.markdown("---")
-        st.subheader("📍 3. Ubicación del Incidente (Georreferenciación Automática)")
+        st.subheader("📍 4. Ubicación del Incidente (Georreferenciación Automática)")
 
         method = st.radio(
             "Método de ubicación:",
@@ -1184,7 +1193,9 @@ def page_report():
 
                 st.success(f"✅ Reporte creado exitosamente!")
                 st.info(f"📋 ID del reporte: `{created['id']}`")
-                st.info(f"📜 Tipo: {tipo_reporte} | Ley: {tipo_ley}")
+                st.info(
+                    f"📜 Tipo: {tipo_options.get(tipo_reporte, '')} | Ley: {tipo_ley}"
+                )
                 st.balloons()
 
 
