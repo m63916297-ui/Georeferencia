@@ -36,7 +36,7 @@ REVERSE_GEOCODE_URL = f"{GEOAPIFY_BASE_URL}/geocode/reverse"
 IP_GEOCODE_URL = f"{GEOAPIFY_BASE_URL}/geocode/ip"
 MAP_TILES_URL = f"https://maps.geoapify.com/v1/tile/carto/{{z}}/{{x}}/{{y}}.png?apiKey={GEOAPIFY_API_KEY}"
 
-DEFAULT_MAP_CENTER = [4.5709, -74.2973]
+DEFAULT_MAP_CENTER = [6.2442, -75.5812]
 DEFAULT_ZOOM = 12
 DATA_FILE = "georeferencia/data/incidents.json"
 
@@ -852,9 +852,9 @@ def page_report():
 
             col_lat, col_lon = st.columns(2)
             with col_lat:
-                lat = st.number_input("Latitud", value=4.5709, format="%.6f")
+                lat = st.number_input("Latitud", value=6.2442, format="%.6f")
             with col_lon:
-                lon = st.number_input("Longitud", value=-74.2973, format="%.6f")
+                lon = st.number_input("Longitud", value=-75.5812, format="%.6f")
 
             if clicked.get("last_clicked"):
                 lat, lon = (
