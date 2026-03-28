@@ -1365,6 +1365,31 @@ def page_map():
                     last_loc["longitude"],
                 ]
 
+    all_incidents = storage.get_all()
+    incidents_with_location = [
+        i
+        for i in all_incidents
+        if i.get("location", {}).get("latitude")
+        and i.get("location", {}).get("longitude")
+    ]
+
+    st.markdown("---")
+    st.subheader("📍 Estadísticas del Mapa")
+
+    col_stats1, col_stats2, col_stats3, col_stats4 = st.columns(4)
+    with col_stats1:
+        st.metric("Total Registrados", len(all_incidents))
+    with col_stats2:
+        st.metric("Con Geolocalización", len(incidents_with_location))
+    with col_stats3:
+        st.metric("Sin Ubicación", len(all_incidents) - len(incidents_with_location))
+    with col_stats4:
+        activos = len([i for i in all_incidents if i.get("status") != "cerrado"])
+        st.metric("Activos", activos)
+
+    st.markdown("---")
+    st.subheader("🔍 Filtros")
+
     all_categories = get_all_categories()
     cat_options = ["Todas"] + [c["id"] for c in all_categories]
     cat_labels = ["Todas"] + [f"{c['icono']} {c['nombre']}" for c in all_categories]
@@ -1394,14 +1419,35 @@ def page_map():
     if f_stat != "Todos":
         incidents = [i for i in incidents if i.get("status") == f_stat]
 
-    st.markdown(f"**Total de incidentes:** {len(incidents)}")
+    st.markdown("---")
+    col_map, col_legend = st.columns([4, 1])
 
-    if incidents:
-        m = create_map(incidents, st.session_state.map_center, zoom=11)
-        st_folium(m, width=1100, height=650, key="full_map")
-    else:
-        m = create_map([], DEFAULT_MAP_CENTER)
-        st_folium(m, width=1100, height=650)
+    with col_legend:
+        st.markdown("##### 🗺️ Leyenda")
+        st.markdown("**Por Severidad:**")
+        st.markdown("🟢 Bajo")
+        st.markdown("🟠 Medio")
+        st.markdown("🔴 Alto")
+        st.markdown("⛔ Crítico")
+
+        st.markdown("---")
+        st.markdown("**Por Estado:**")
+        st.markdown("📥 Recibido")
+        st.markdown("🔍 Validando")
+        st.markdown("👤 Asignado")
+        st.markdown("⚙️ En Proceso")
+        st.markdown("✅ Resuelto")
+
+    with col_map:
+        st.markdown(f"### 📍 Incidentes en el Mapa: {len(incidents)}")
+
+        if incidents:
+            m = create_map(incidents, st.session_state.map_center, zoom=12)
+            st_folium(m, width=900, height=600, key="full_map")
+        else:
+            m = create_map([], DEFAULT_MAP_CENTER)
+            st_folium(m, width=900, height=600)
+            st.info("No hay incidentes que mostrar con los filtros seleccionados")
 
 
 def page_list():
