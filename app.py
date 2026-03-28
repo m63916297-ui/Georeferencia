@@ -1311,12 +1311,39 @@ def page_report():
                 created = storage.create(incident)
                 st.session_state.pending_location = None
                 st.session_state.location_confirmed = False
+                st.session_state.last_incident_id = created["id"]
+                st.session_state.last_incident_location = created["location"]
 
                 st.success(f"✅ Reporte creado exitosamente!")
                 st.info(f"📋 ID del reporte: `{created['id']}`")
                 st.info(
                     f"📜 Tipo: {tipo_options.get(tipo_reporte, '')} | Ley: {tipo_ley}"
                 )
+
+                st.markdown("---")
+                st.subheader("📍 Ubicación del Incidente Registrado")
+
+                loc = created["location"]
+                if loc and loc.get("latitude") and loc.get("longitude"):
+                    st.session_state.map_center = [loc["latitude"], loc["longitude"]]
+                    m = create_map([created], st.session_state.map_center, zoom=16)
+                    st_folium(m, width=700, height=400, key="incident_map")
+                    st.markdown(
+                        f"**Coordenadas:** Lat: {loc['latitude']:.6f}, Lon: {loc['longitude']:.6f}"
+                    )
+                    st.markdown(f"**Dirección:** {loc.get('address', 'N/A')}")
+                else:
+                    st.info("El incidente no tiene coordenadas geográficas")
+
+                col_ver_map, col_nuevo = st.columns(2)
+                with col_ver_map:
+                    if st.button("🗺️ Ver en Mapa Global", use_container_width=True):
+                        st.session_state.navigate_to = "🗺️ Mapa Global"
+                        st.rerun()
+                with col_nuevo:
+                    if st.button("📝 Crear Nuevo Reporte", use_container_width=True):
+                        st.rerun()
+
                 st.balloons()
 
 
@@ -1324,6 +1351,22 @@ def page_map():
     st.title("🗺️ Mapa Global de Incidentes")
     st.markdown("Visualización geoespacial de todos los reportes")
     st.markdown("*Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE*")
+
+    if "last_incident_id" in st.session_state and st.session_state.last_incident_id:
+        st.success(
+            f"📍 Último incidente registrado: `{st.session_state.last_incident_id}`"
+        )
+        last_inc = storage.get_all()
+        last_inc = [
+            i for i in last_inc if i.get("id") == st.session_state.last_incident_id
+        ]
+        if last_inc:
+            last_loc = last_inc[0].get("location", {})
+            if last_loc.get("latitude") and last_loc.get("longitude"):
+                st.session_state.map_center = [
+                    last_loc["latitude"],
+                    last_loc["longitude"],
+                ]
 
     all_categories = get_all_categories()
     cat_options = ["Todas"] + [c["id"] for c in all_categories]
@@ -1521,7 +1564,11 @@ def main():
     init_session()
     render_header()
 
-    choice = render_sidebar()
+    if "navigate_to" in st.session_state and st.session_state.navigate_to:
+        choice = st.session_state.navigate_to
+        st.session_state.navigate_to = None
+    else:
+        choice = render_sidebar()
 
     pages = {
         "🏠 Dashboard": page_dashboard,
