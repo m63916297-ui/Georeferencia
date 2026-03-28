@@ -1154,6 +1154,76 @@ def page_report():
             format_func=lambda x: category_map.get(x, x),
         )
 
+    st.markdown("---")
+    st.subheader("📍 4. Ubicación del Incidente")
+
+    col_zona_select, col_zona_info = st.columns([1, 1])
+
+    zona_list = list(ZONAS_MEDELLIN.items())
+    zona_options = [""] + [k for k, v in zona_list]
+    zona_map = {k: v["nombre"] for k, v in zona_list}
+
+    with col_zona_select:
+        selected_zona = st.selectbox(
+            "Seleccione zona:",
+            zona_options,
+            format_func=lambda x: (
+                zona_map.get(x, "Seleccionar zona...") if x else "Seleccionar zona..."
+            ),
+        )
+
+    zona_lat = DEFAULT_MAP_CENTER[0]
+    zona_lon = DEFAULT_MAP_CENTER[1]
+
+    if selected_zona:
+        zona_lat = ZONAS_MEDELLIN[selected_zona]["lat"]
+        zona_lon = ZONAS_MEDELLIN[selected_zona]["lon"]
+        st.session_state.map_center = [zona_lat, zona_lon]
+        st.session_state.selected_zona_name = ZONAS_MEDELLIN[selected_zona]["nombre"]
+        with col_zona_info:
+            st.success(f"📍 {ZONAS_MEDELLIN[selected_zona]['nombre']}")
+            st.markdown(
+                f"**Comunas:** {', '.join(ZONAS_MEDELLIN[selected_zona].get('comunas', []))}"
+            )
+
+    m = create_map([], st.session_state.map_center, zoom=14)
+    clicked = st_folium(
+        m, width=750, height=450, key="zona_map", returned_objects=["last_clicked"]
+    )
+
+    lat, lon = zona_lat, zona_lon
+    if clicked.get("last_clicked"):
+        lat, lon = clicked["last_clicked"]["lat"], clicked["last_clicked"]["lng"]
+        st.session_state.map_center = [lat, lon]
+
+    st.markdown("---")
+    col_lat, col_lon, col_btn = st.columns([1, 1, 1])
+
+    with col_lat:
+        lat = st.number_input("Latitud", value=lat, format="%.6f", key="lat_incident")
+    with col_lon:
+        lon = st.number_input("Longitud", value=lon, format="%.6f", key="lon_incident")
+    with col_btn:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("✅ Confirmar Ubicación", use_container_width=True):
+            loc = geo_service.reverse_geocode(lat, lon)
+            if loc:
+                st.session_state.pending_location = {
+                    **loc,
+                    "latitude": lat,
+                    "longitude": lon,
+                }
+                st.session_state.location_confirmed = True
+
+    if st.session_state.location_confirmed and st.session_state.pending_location:
+        loc = st.session_state.pending_location
+        st.success(
+            f"✅ Ubicación confirmada: Lat {loc.get('latitude', 0):.6f}, Lon {loc.get('longitude', 0):.6f}"
+        )
+
+    st.markdown("---")
+    st.subheader("📝 5. Datos del Reporte")
+
     with st.form("report_form", clear_on_submit=False):
         title = st.text_input(
             "Título del Incidente *", placeholder="Descripción breve del incidente"
@@ -1191,88 +1261,6 @@ def page_report():
             placeholder="Describa el incidente con detalle...",
         )
 
-        st.markdown("---")
-        st.subheader("📍 4. Ubicación del Incidente")
-
-        st.markdown("##### 🏘️ Seleccione la zona en el mapa")
-        st.markdown(
-            "*Haga clic en el mapa para seleccionar la ubicación exacta del incidente*"
-        )
-
-        col_zona_select, col_zona_info = st.columns([1, 1])
-
-        zona_list = list(ZONAS_MEDELLIN.items())
-        zona_options = [""] + [k for k, v in zona_list]
-        zona_map = {k: v["nombre"] for k, v in zona_list}
-
-        with col_zona_select:
-            selected_zona = st.selectbox(
-                "Seleccione zona rápida:",
-                zona_options,
-                format_func=lambda x: (
-                    zona_map.get(x, "Seleccionar zona...")
-                    if x
-                    else "Seleccionar zona..."
-                ),
-            )
-
-        zona_lat = DEFAULT_MAP_CENTER[0]
-        zona_lon = DEFAULT_MAP_CENTER[1]
-        zona_nombre = "Medellín"
-
-        if selected_zona:
-            zona_lat = ZONAS_MEDELLIN[selected_zona]["lat"]
-            zona_lon = ZONAS_MEDELLIN[selected_zona]["lon"]
-            zona_nombre = ZONAS_MEDELLIN[selected_zona]["nombre"]
-            st.session_state.map_center = [zona_lat, zona_lon]
-            with col_zona_info:
-                st.success(f"📍 {zona_nombre}")
-                st.markdown(
-                    f"**Comunas:** {', '.join(ZONAS_MEDELLIN[selected_zona].get('comunas', []))}"
-                )
-
-        m = create_map([], st.session_state.map_center, zoom=14)
-        clicked = st_folium(
-            m, width=750, height=450, key="zona_map", returned_objects=["last_clicked"]
-        )
-
-        lat, lon = zona_lat, zona_lon
-        if clicked.get("last_clicked"):
-            lat, lon = clicked["last_clicked"]["lat"], clicked["last_clicked"]["lng"]
-
-        st.markdown("---")
-        col_lat, col_lon, col_btn = st.columns([1, 1, 1])
-
-        with col_lat:
-            lat = st.number_input(
-                "Latitud", value=lat, format="%.6f", key="lat_incident"
-            )
-        with col_lon:
-            lon = st.number_input(
-                "Longitud", value=lon, format="%.6f", key="lon_incident"
-            )
-
-        with col_btn:
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.form_submit_button(
-                "✅ Confirmar Ubicación", use_container_width=True
-            ):
-                loc = geo_service.reverse_geocode(lat, lon)
-                if loc:
-                    st.session_state.pending_location = {
-                        **loc,
-                        "latitude": lat,
-                        "longitude": lon,
-                    }
-                    st.session_state.location_confirmed = True
-
-        if st.session_state.location_confirmed and st.session_state.pending_location:
-            loc = st.session_state.pending_location
-            st.success(
-                f"✅ Ubicación confirmada: Lat {loc.get('latitude', 0):.6f}, Lon {loc.get('longitude', 0):.6f}"
-            )
-
-        st.markdown("---")
         st.markdown(
             "**⏱️ Timestamp automático y georreferenciación se asignarán al enviar el reporte**"
         )
@@ -1285,7 +1273,7 @@ def page_report():
             if not title or not description or not reporter:
                 st.error("⚠️ Complete todos los campos requeridos (*)")
             elif not st.session_state.location_confirmed:
-                st.error("⚠️ Seleccione una ubicación")
+                st.error("⚠️ Seleccione y confirme una ubicación")
             else:
                 tipo_ley = None
                 if tipo_reporte == "convivencia":
