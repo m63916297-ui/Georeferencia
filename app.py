@@ -814,6 +814,12 @@ def init_session():
         st.session_state.report_category = SegmentacionReporte.Categoria.todas()[0][
             "id"
         ]
+    if "navigate_to" not in st.session_state:
+        st.session_state.navigate_to = None
+    if "selected_zona_name" not in st.session_state:
+        st.session_state.selected_zona_name = "Medellín"
+    if "last_incident_id" not in st.session_state:
+        st.session_state.last_incident_id = None
 
 
 def render_header():
@@ -946,16 +952,19 @@ def create_map(incidents: List[Dict], center: List = None, zoom: int = DEFAULT_Z
             continue
 
         cat, sev = inc.get("category", "seguridad"), inc.get("severity", "bajo")
+        tipo_reporte = inc.get("tipo_reporte", "rapido")
+        ley = inc.get("ley", "")
         popup = f"""
         <div style="font-family: Arial; min-width: 280px;">
             <h4 style="color: #1565C0; margin: 0 0 10px 0;">{inc.get("title", "Sin título")}</h4>
-            <p><b>📁 Categoría:</b> {CATEGORY_EMOJI.get(cat, "📌")} {inc.get("subcategoria", cat)}</p>
+            <p><b>📁 Categoría:</b> {CATEGORY_EMOJI.get(cat, "📌")} {cat}</p>
+            <p><b>📜 Tipo:</b> {tipo_reporte} {ley if ley else ""}</p>
             <p><b>⚠️ Severidad:</b> <span style="color:{SEVERITY_COLORS.get(sev, "blue")}; font-weight:bold;">{sev.upper()}</span></p>
             <p><b>📊 Estado:</b> {inc.get("status", "recibido")}</p>
-            <p><b>🎯 Prioridad:</b> {inc.get("priority", "media")}</p>
             <hr>
             <p style="font-size: 12px;">{inc.get("description", "")[:120]}...</p>
             <p style="font-size: 10px; color: #666;">📍 {loc.get("address", "N/A")}</p>
+            <p style="font-size: 10px; color: #666;">🕐 {inc.get("timestamp", "")[:16]}</p>
         </div>
         """
 
@@ -1426,22 +1435,23 @@ def page_list():
 
     for i, inc in enumerate(incidents):
         cat, sev = inc.get("category", "seguridad"), inc.get("severity", "bajo")
+        tipo_reporte = inc.get("tipo_reporte", "rapido")
+        ley = inc.get("ley", "")
 
         with st.expander(
             f"{CATEGORY_EMOJI.get(cat, '📌')} {inc.get('title', '')} | :{SEVERITY_COLORS.get(sev, 'blue')}[{sev.upper()}]"
         ):
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.markdown(
-                    f"**📁 Categoría:** {inc.get('subcategoria', inc.get('category', ''))}"
-                )
+                st.markdown(f"**📁 Categoría:** {cat}")
+                st.markdown(f"**📜 Tipo:** {tipo_reporte} {ley if ley else ''}")
                 st.markdown(f"**⚠️ Severidad:** {inc.get('severity', '')}")
             with col2:
-                st.markdown(f"**🎯 Prioridad:** {inc.get('priority', '')}")
                 st.markdown(f"**📊 Estado:** {inc.get('status', '')}")
+                st.markdown(f"**📢 Fuente:** {inc.get('fuente', '')}")
             with col3:
                 st.markdown(f"**👤 Reportante:** {inc.get('reporter_name', '')}")
-                st.markdown(f"**📅 Fecha:** {inc.get('created_at', '')[:16]}")
+                st.markdown(f"**📅 Fecha:** {inc.get('timestamp', '')[:16]}")
 
             st.markdown(f"**📝 Descripción:** {inc.get('description', '')}")
 
