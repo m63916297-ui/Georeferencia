@@ -932,73 +932,54 @@ def create_map(incidents: List[Dict], center: List = None, zoom: int = DEFAULT_Z
     if center is None:
         center = DEFAULT_MAP_CENTER.copy()
 
-    m = folium.Map(
-        location=center,
-        zoom_start=zoom,
-        tiles=MAP_TILES_URL,
-        attr='&copy; <a href="https://www.geoapify.com/">Geoapify</a>',
-    )
-
-    Fullscreen(position="topright").add_to(m)
-    LocateControl(auto_start=False).add_to(m)
+    m = folium.Map(location=center, zoom_start=zoom)
 
     for inc in incidents:
-        loc = inc.get("location", {})
-        lat = loc.get("latitude", 0) if loc else 0
-        lon = loc.get("longitude", 0) if loc else 0
+        loc = inc.get("location")
+        if not loc:
+            continue
+
+        lat = loc.get("latitude")
+        lon = loc.get("longitude")
 
         if not lat or not lon or (lat == 0 and lon == 0):
             continue
 
-        cat = inc.get("category", "")
-        sev = inc.get("severity", "bajo")
-        tipo_reporte = inc.get("tipo_reporte", "rapido")
-        ley = inc.get("ley", "") or ""
-        title = inc.get("title", "Sin título")
-        description = inc.get("description", "")[:100] or "Sin descripción"
-        address = loc.get("address", "N/A") if loc else "N/A"
-        timestamp = inc.get("timestamp", "")[:16] if inc.get("timestamp") else "N/A"
+        cat = inc.get("category", "otro")
+        sev = inc.get("severity", "medio")
+        title = inc.get("title", "Incidente")
+        description = inc.get("description", "")[:80]
         reporter = inc.get("reporter_name", "Anónimo")
-        fuente = inc.get("fuente", "N/A")
+        timestamp = inc.get("timestamp", "")[:16] if inc.get("timestamp") else ""
         status = inc.get("status", "recibido")
 
         emoji = CATEGORY_EMOJI.get(cat, "📌")
         sev_color = SEVERITY_COLORS.get(sev, "blue")
 
-        popup_html = f"""
-        <div style="font-family: Arial; min-width: 280px; padding: 10px;">
-            <h4 style="color: #1565C0; margin: 0 0 10px 0; border-bottom: 2px solid #1565C0; padding-bottom: 5px;">
-                {emoji} {title}
-            </h4>
-            <p style="margin: 5px 0;"><b>📁 Categoría:</b> {cat}</p>
-            <p style="margin: 5px 0;"><b>📜 Tipo:</b> {tipo_reporte} {ley}</p>
-            <p style="margin: 5px 0;"><b>⚠️ Severidad:</b> <span style="color:{sev_color}; font-weight:bold;">{sev.upper()}</span></p>
-            <p style="margin: 5px 0;"><b>📊 Estado:</b> {status}</p>
-            <hr style="margin: 10px 0;">
-            <p style="margin: 5px 0; font-size: 12px;"><b>📝 Descripción:</b><br>{description}...</p>
-            <hr style="margin: 10px 0;">
-            <p style="margin: 5px 0; font-size: 11px;"><b>👤 Reportante:</b> {reporter}</p>
-            <p style="margin: 5px 0; font-size: 11px;"><b>📢 Fuente:</b> {fuente}</p>
-            <p style="margin: 5px 0; font-size: 11px;"><b>📍 Dirección:</b> {address}</p>
-            <p style="margin: 5px 0; font-size: 11px;"><b>🗺️ Coordenadas:</b> ({lat:.6f}, {lon:.6f})</p>
-            <p style="margin: 5px 0; font-size: 11px;"><b>🕐 Fecha:</b> {timestamp}</p>
-        </div>
+        popup_text = f"""
+        <b>{emoji} {title}</b><br>
+        <b>Categoría:</b> {cat}<br>
+        <b>Severidad:</b> {sev.upper()}<br>
+        <b>Estado:</b> {status}<br>
+        <b>Reportante:</b> {reporter}<br>
+        <b>Descripción:</b> {description}...<br>
+        <b>Fecha:</b> {timestamp}
         """
 
         folium.Marker(
-            location=[lat, lon],
-            popup=folium.Popup(popup_html, max_width=350),
-            tooltip=f"{emoji} {title} ({sev.upper()})",
+            [lat, lon],
+            popup=popup_text,
+            tooltip=f"{emoji} {title}",
             icon=folium.Icon(color=sev_color, icon="info-sign"),
         ).add_to(m)
 
         folium.CircleMarker(
-            location=[lat, lon],
-            radius=12,
+            [lat, lon],
+            radius=10,
             color=sev_color,
             fill=True,
             fillColor=sev_color,
-            fillOpacity=0.3,
+            fillOpacity=0.4,
             weight=2,
         ).add_to(m)
 
@@ -1330,33 +1311,30 @@ def page_report():
                 st.session_state.last_incident_location = created["location"]
 
                 st.success(f"✅ Reporte creado exitosamente!")
-                st.info(f"📋 ID del reporte: `{created['id']}`")
-                st.info(
-                    f"📜 Tipo: {tipo_options.get(tipo_reporte, '')} | Ley: {tipo_ley}"
-                )
+                st.info(f"📋 ID: `{created['id']}`")
 
                 st.markdown("---")
-                st.subheader("📍 Ubicación del Incidente Registrado")
+                st.subheader("📍 Ubicación del Incidente")
 
-                loc = created["location"]
+                loc = created.get("location")
                 if loc and loc.get("latitude") and loc.get("longitude"):
-                    st.session_state.map_center = [loc["latitude"], loc["longitude"]]
-                    m = create_map([created], st.session_state.map_center, zoom=16)
-                    st_folium(m, width=700, height=400, key="incident_map")
+                    map_center = [loc["latitude"], loc["longitude"]]
+                    m = create_map([created], map_center, zoom=16)
+                    st_folium(m, width=800, height=400, key="new_incident_map")
                     st.markdown(
-                        f"**Coordenadas:** Lat: {loc['latitude']:.6f}, Lon: {loc['longitude']:.6f}"
+                        f"**Coordenadas:** `{loc['latitude']:.6f}, {loc['longitude']:.6f}`"
                     )
                     st.markdown(f"**Dirección:** {loc.get('address', 'N/A')}")
                 else:
-                    st.info("El incidente no tiene coordenadas geográficas")
+                    st.warning("⚠️ El incidente no tiene coordenadas de ubicación")
 
-                col_ver_map, col_nuevo = st.columns(2)
-                with col_ver_map:
+                col_ver, col_nuevo = st.columns(2)
+                with col_ver:
                     if st.button("🗺️ Ver en Mapa Global", use_container_width=True):
                         st.session_state.navigate_to = "🗺️ Mapa Global"
                         st.rerun()
                 with col_nuevo:
-                    if st.button("📝 Crear Nuevo Reporte", use_container_width=True):
+                    if st.button("📝 Nuevo Reporte", use_container_width=True):
                         st.rerun()
 
                 st.balloons()
@@ -1364,42 +1342,19 @@ def page_report():
 
 def page_map():
     st.title("🗺️ Mapa Global de Incidentes")
-    st.markdown("Visualización geoespacial de todos los reportes")
-    st.markdown("*Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE*")
+    st.markdown("*Visualización de todos los reportes*")
 
     all_incidents = storage.get_all()
 
-    if "last_incident_id" in st.session_state and st.session_state.last_incident_id:
-        st.success(
-            f"📍 Último incidente registrado: `{st.session_state.last_incident_id}`"
-        )
-        last_inc = [
-            i for i in all_incidents if i.get("id") == st.session_state.last_incident_id
-        ]
-        if last_inc:
-            last_loc = last_inc[0].get("location", {})
-            if last_loc and last_loc.get("latitude") and last_loc.get("longitude"):
-                st.session_state.map_center = [
-                    last_loc["latitude"],
-                    last_loc["longitude"],
-                ]
-
-    incidents_with_location = [
-        i
-        for i in all_incidents
-        if i.get("location", {}).get("latitude")
-        and i.get("location", {}).get("longitude")
-    ]
-
-    st.markdown("---")
-    col_stats1, col_stats2, col_stats3, col_stats4 = st.columns(4)
+    col_stats1, col_stats2, col_stats3 = st.columns(3)
     with col_stats1:
         st.metric("Total", len(all_incidents))
     with col_stats2:
-        st.metric("Con Mapa", len(incidents_with_location))
+        with_loc = len(
+            [i for i in all_incidents if i.get("location", {}).get("latitude")]
+        )
+        st.metric("Con Ubicación", with_loc)
     with col_stats3:
-        st.metric("Sin Ubicación", len(all_incidents) - len(incidents_with_location))
-    with col_stats4:
         activos = len(
             [i for i in all_incidents if i.get("status") not in ["cerrado", "resuelto"]]
         )
@@ -1413,7 +1368,7 @@ def page_map():
     cat_labels = ["Todas"] + [f"{c['icono']} {c['nombre']}" for c in all_categories]
     cat_dict = dict(zip(cat_options, cat_labels))
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
         f_cat = st.selectbox(
             "Categoría", cat_options, format_func=lambda x: cat_dict.get(x, x)
@@ -1423,10 +1378,6 @@ def page_map():
             "Severidad",
             ["Todas"] + [s["id"] for s in SegmentacionReporte.Severidad.todas()],
         )
-    with col3:
-        f_stat = st.selectbox(
-            "Estado", ["Todos"] + [e["id"] for e in SegmentacionReporte.Estado.todos()]
-        )
 
     incidents = storage.get_all()
 
@@ -1434,30 +1385,17 @@ def page_map():
         incidents = [i for i in incidents if i.get("category") == f_cat]
     if f_sev != "Todas":
         incidents = [i for i in incidents if i.get("severity") == f_sev]
-    if f_stat != "Todos":
-        incidents = [i for i in incidents if i.get("status") == f_stat]
 
     st.markdown("---")
-    st.markdown(f"### 📍 Incidentes en el Mapa: {len(incidents)}")
+    st.markdown(f"### 📍 Total: {len(incidents)} incidentes")
 
-    col_map, col_legend = st.columns([4, 1])
-
-    with col_legend:
-        st.markdown("##### 🗺️ Leyenda")
-        st.markdown("**Severidad:**")
-        st.markdown("🟢 Bajo")
-        st.markdown("🟠 Medio")
-        st.markdown("🔴 Alto")
-        st.markdown("⛔ Crítico")
-
-    with col_map:
-        if incidents:
-            m = create_map(incidents, st.session_state.map_center, zoom=13)
-            st_folium(m, width=900, height=600, key="full_map")
-        else:
-            m = create_map([], DEFAULT_MAP_CENTER)
-            st_folium(m, width=900, height=600)
-            st.info("No hay incidentes que mostrar con los filtros seleccionados")
+    if incidents:
+        m = create_map(incidents, DEFAULT_MAP_CENTER, zoom=12)
+        st_folium(m, width=1000, height=600, key="global_map")
+    else:
+        m = create_map([], DEFAULT_MAP_CENTER)
+        st_folium(m, width=1000, height=600)
+        st.info("No hay incidentes para mostrar")
 
 
 def page_list():
