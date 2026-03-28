@@ -946,40 +946,60 @@ def create_map(incidents: List[Dict], center: List = None, zoom: int = DEFAULT_Z
 
     for inc in incidents:
         loc = inc.get("location", {})
-        lat, lon = loc.get("latitude", 0), loc.get("longitude", 0)
+        lat = loc.get("latitude", 0) if loc else 0
+        lon = loc.get("longitude", 0) if loc else 0
 
-        if lat == 0 and lon == 0:
+        if not lat or not lon or (lat == 0 and lon == 0):
             continue
 
-        cat, sev = inc.get("category", "seguridad"), inc.get("severity", "bajo")
+        cat = inc.get("category", "")
+        sev = inc.get("severity", "bajo")
         tipo_reporte = inc.get("tipo_reporte", "rapido")
-        ley = inc.get("ley", "")
-        popup = f"""
-        <div style="font-family: Arial; min-width: 280px;">
-            <h4 style="color: #1565C0; margin: 0 0 10px 0;">{inc.get("title", "Sin título")}</h4>
-            <p><b>📁 Categoría:</b> {CATEGORY_EMOJI.get(cat, "📌")} {cat}</p>
-            <p><b>📜 Tipo:</b> {tipo_reporte} {ley if ley else ""}</p>
-            <p><b>⚠️ Severidad:</b> <span style="color:{SEVERITY_COLORS.get(sev, "blue")}; font-weight:bold;">{sev.upper()}</span></p>
-            <p><b>📊 Estado:</b> {inc.get("status", "recibido")}</p>
-            <hr>
-            <p style="font-size: 12px;">{inc.get("description", "")[:120]}...</p>
-            <p style="font-size: 10px; color: #666;">📍 {loc.get("address", "N/A")}</p>
-            <p style="font-size: 10px; color: #666;">🕐 {inc.get("timestamp", "")[:16]}</p>
+        ley = inc.get("ley", "") or ""
+        title = inc.get("title", "Sin título")
+        description = inc.get("description", "")[:100] or "Sin descripción"
+        address = loc.get("address", "N/A") if loc else "N/A"
+        timestamp = inc.get("timestamp", "")[:16] if inc.get("timestamp") else "N/A"
+        reporter = inc.get("reporter_name", "Anónimo")
+        fuente = inc.get("fuente", "N/A")
+        status = inc.get("status", "recibido")
+
+        emoji = CATEGORY_EMOJI.get(cat, "📌")
+        sev_color = SEVERITY_COLORS.get(sev, "blue")
+
+        popup_html = f"""
+        <div style="font-family: Arial; min-width: 280px; padding: 10px;">
+            <h4 style="color: #1565C0; margin: 0 0 10px 0; border-bottom: 2px solid #1565C0; padding-bottom: 5px;">
+                {emoji} {title}
+            </h4>
+            <p style="margin: 5px 0;"><b>📁 Categoría:</b> {cat}</p>
+            <p style="margin: 5px 0;"><b>📜 Tipo:</b> {tipo_reporte} {ley}</p>
+            <p style="margin: 5px 0;"><b>⚠️ Severidad:</b> <span style="color:{sev_color}; font-weight:bold;">{sev.upper()}</span></p>
+            <p style="margin: 5px 0;"><b>📊 Estado:</b> {status}</p>
+            <hr style="margin: 10px 0;">
+            <p style="margin: 5px 0; font-size: 12px;"><b>📝 Descripción:</b><br>{description}...</p>
+            <hr style="margin: 10px 0;">
+            <p style="margin: 5px 0; font-size: 11px;"><b>👤 Reportante:</b> {reporter}</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>📢 Fuente:</b> {fuente}</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>📍 Dirección:</b> {address}</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>🗺️ Coordenadas:</b> ({lat:.6f}, {lon:.6f})</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>🕐 Fecha:</b> {timestamp}</p>
         </div>
         """
 
         folium.Marker(
             location=[lat, lon],
-            popup=folium.Popup(popup, max_width=320),
-            tooltip=f"{CATEGORY_EMOJI.get(cat, '📌')} {inc.get('title', '')}",
-            icon=folium.Icon(color=SEVERITY_COLORS.get(sev, "blue"), icon="info-sign"),
+            popup=folium.Popup(popup_html, max_width=350),
+            tooltip=f"{emoji} {title} ({sev.upper()})",
+            icon=folium.Icon(color=sev_color, icon="info-sign"),
         ).add_to(m)
 
         folium.CircleMarker(
             location=[lat, lon],
-            radius=10,
-            color=SEVERITY_COLORS.get(sev, "blue"),
+            radius=12,
+            color=sev_color,
             fill=True,
+            fillColor=sev_color,
             fillOpacity=0.3,
             weight=2,
         ).add_to(m)
@@ -1461,12 +1481,17 @@ def page_list():
         st.info("No hay reportes")
         return
 
-    # Filtros
+    all_categories = get_all_categories()
+    cat_options = ["Todas"] + [c["id"] for c in all_categories]
+    cat_labels = ["Todas"] + [f"{c['icono']} {c['nombre']}" for c in all_categories]
+    cat_dict = dict(zip(cat_options, cat_labels))
+
     col1, col2 = st.columns(2)
     with col1:
         f_cat = st.selectbox(
             "Filtrar categoría",
-            ["Todas"] + [c["id"] for c in SegmentacionReporte.Categoria.todas()],
+            cat_options,
+            format_func=lambda x: cat_dict.get(x, x),
         )
     with col2:
         f_stat = st.selectbox(
