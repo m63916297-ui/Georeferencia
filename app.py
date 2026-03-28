@@ -49,123 +49,306 @@ DATA_FILE = "georeferencia/data/incidents.json"
 class SegmentacionReporte:
     """
     Segmentación Estratégica de Variables de Reporte
-    Basado en el documento: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE
+    Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE
+    - Panel de Acceso Directo (6 categorías)
+    - Incidentes de Convivencia (Ley 1801/2016)
+    - Delitos de Bajo/Mediano Impacto (Ley 599/2000)
     """
 
-    # ==================== CATEGORÍAS PRINCIPALES ====================
+    # ==================== PANEL DE ACCESO DIRECTO (Variables de Mayor Interés Territorial) ====================
     class Categoria:
-        SEGURIDAD = {
-            "id": "seguridad",
-            "nombre": "Seguridad",
-            "icono": "🔒",
-            "descripcion": "Incidentes relacionados con seguridad ciudadana",
-            "subcategorias": [
-                "Robo/Asalto",
-                "Vandalismo",
-                "Agresión",
-                "Secuestro",
-                "Extorsión",
-                "Delincuencia",
-                "Seguridad Vial",
-                "Otro Seguridad",
-            ],
+        HURTO_PERSONAS = {
+            "id": "hurto_personas",
+            "nombre": "Hurto a Personas",
+            "icono": "🎯",
+            "descripcion": "Reportes rápidos de robos sin violencia extrema",
+            "ley": None,
+            "subcategorias": [],
         }
 
-        INFRAESTRUCTURA = {
-            "id": "infraestructura",
-            "nombre": "Infraestructura",
-            "icono": "🏗️",
-            "descripcion": "Problemas de infraestructura urbana",
-            "subcategorias": [
-                "Vía dañada",
-                "Bache",
-                "Semáforo dañado",
-                "Alumbrado público",
-                "Puente dañado",
-                "Edificio en riesgo",
-                "Obra abandonada",
-                "Otro Infraestructura",
-            ],
+        HURTO_COMERCIOS = {
+            "id": "hurto_comercios",
+            "nombre": "Hurto a Comercios",
+            "icono": "🏪",
+            "descripcion": "Incidentes de robo en establecimientos locales",
+            "ley": None,
+            "subcategorias": [],
         }
 
-        SERVICIOS = {
-            "id": "servicios",
-            "nombre": "Servicios",
-            "icono": "⚙️",
-            "descripcion": "Fallas en servicios públicos",
-            "subcategorias": [
-                "Sin agua",
-                "Sin luz",
-                "Sin gas",
-                "Telecomunicaciones",
-                "Transporte público",
-                "Recolección basura",
-                "Salud",
-                "Otro Servicios",
-            ],
-        }
-
-        AMBIENTAL = {
-            "id": "ambiental",
-            "nombre": "Ambiental",
-            "icono": "🌿",
-            "descripcion": "Incidentes ambientales",
-            "subcategorias": [
-                "Contaminación",
-                "Deforestación",
-                "Residuos peligrosos",
-                "Maltrato animal",
-                "Extinción",
-                "Incendio",
-                "Inundación",
-                "Otro Ambiental",
-            ],
-        }
-
-        TRANSITO = {
-            "id": "transito",
-            "nombre": "Tránsito",
+        HURTO_VEHICULOS = {
+            "id": "hurto_vehiculos",
+            "nombre": "Hurto a Vehículos",
             "icono": "🚗",
-            "descripcion": "Incidentes de tráfico y transporte",
-            "subcategorias": [
-                "Accidente",
-                "Congestión",
-                "Señalización",
-                "Estacionamiento indebido",
-                "Vehículo abandonado",
-                "Choque",
-                "Atropello",
-                "Otro Tránsito",
-            ],
+            "descripcion": "Incluye partes de vehículos y motocicletas",
+            "ley": None,
+            "subcategorias": [],
         }
 
-        EMERGENCIAS = {
-            "id": "emergencias",
-            "nombre": "Emergencias",
-            "icono": "🚨",
-            "descripcion": "Situaciones de emergencia",
-            "subcategorias": [
-                "Incendio",
-                "Explosión",
-                "Fuga de gas",
-                "Emergencia médica",
-                "Desastre natural",
-                "Evacuación",
-                "Alerta sanitaria",
-                "Otro Emergencia",
-            ],
+        HURTO_RESIDENCIAS = {
+            "id": "hurto_residencias",
+            "nombre": "Hurto a Residencias",
+            "icono": "🏠",
+            "descripcion": "Violación de la propiedad privada",
+            "ley": None,
+            "subcategorias": [],
+        }
+
+        VIOLENCIA_INTRAFAMILIAR = {
+            "id": "violencia_intrafamiliar",
+            "nombre": "Violencia Intrafamiliar",
+            "icono": "⚠️",
+            "descripcion": "Reportes de agresiones dentro del núcleo hogar",
+            "ley": None,
+            "subcategorias": [],
+        }
+
+        EXTORSION = {
+            "id": "extorsion",
+            "nombre": "Extorsión",
+            "icono": "💰",
+            "descripcion": "Cobros indebidos o vacunas en sectores comerciales",
+            "ley": None,
+            "subcategorias": [],
         }
 
         @classmethod
         def todas(cls):
             return [
-                cls.SEGURIDAD,
-                cls.INFRAESTRUCTURA,
-                cls.SERVICIOS,
-                cls.AMBIENTAL,
-                cls.TRANSITO,
-                cls.EMERGENCIAS,
+                cls.HURTO_PERSONAS,
+                cls.HURTO_COMERCIOS,
+                cls.HURTO_VEHICULOS,
+                cls.HURTO_RESIDENCIAS,
+                cls.VIOLENCIA_INTRAFAMILIAR,
+                cls.EXTORSION,
             ]
+
+    # ==================== INCIDENTES DE CONVIVENCIA (Ley 1801/2016) ====================
+    class Convivencia:
+        ALTERACIONES_ORDEN = {
+            "id": "alteraciones_orden",
+            "nombre": "Alteraciones al Orden Público",
+            "icono": "📢",
+            "descripcion": "Reportes de comportamiento disruptivo en espacios públicos",
+            "ley": "Ley 1801/2016",
+        }
+
+        EXTORSION_MENOR = {
+            "id": "extorsion_menor",
+            "nombre": "Extorsión Menor",
+            "icono": "💵",
+            "descripcion": "Cobros indebidos o vacunas en sectores comerciales",
+            "ley": "Ley 1801/2016",
+        }
+
+        HURTO_COMERCIOS = {
+            "id": "hurto_comercios_conv",
+            "nombre": "Hurto a Comercios",
+            "icono": "🏪",
+            "descripcion": "Incidentes de robo en establecimientos locales",
+            "ley": "Ley 1801/2016",
+        }
+
+        HURTO_PERSONAS = {
+            "id": "hurto_personas_conv",
+            "nombre": "Hurto a Personas",
+            "icono": "🎯",
+            "descripcion": "Reportes rápidos de robos sin violencia extrema",
+            "ley": "Ley 1801/2016",
+        }
+
+        HURTO_RESIDENCIAS = {
+            "id": "hurto_residencias_conv",
+            "nombre": "Hurto a Residencias",
+            "icono": "🏠",
+            "descripcion": "Violación de la propiedad privada",
+            "ley": "Ley 1801/2016",
+        }
+
+        HURTO_VEHICULOS = {
+            "id": "hurto_vehiculos_conv",
+            "nombre": "Hurto a Vehículos",
+            "icono": "🚗",
+            "descripcion": "Incluye partes de vehículos y motocicletas",
+            "ley": "Ley 1801/2016",
+        }
+
+        LESIONES_PERSONALES = {
+            "id": "lesiones_personales",
+            "nombre": "Lesiones Personales",
+            "icono": "🩹",
+            "descripcion": "Conflictos físicos menores",
+            "ley": "Ley 1801/2016",
+        }
+
+        RINAS_CALLEJERAS = {
+            "id": "rinas_callejeras",
+            "nombre": "Riñas Callejeras",
+            "icono": "👊",
+            "descripcion": "Peleas en vía pública",
+            "ley": "Ley 1801/2016",
+        }
+
+        RUIDO_EXCESIVO = {
+            "id": "ruido_excesivo",
+            "nombre": "Ruido Excesivo",
+            "icono": "🔊",
+            "descripcion": "Contaminación auditiva que afecta la paz vecinal",
+            "ley": "Ley 1801/2016",
+        }
+
+        VANDALISMO = {
+            "id": "vandalismo",
+            "nombre": "Vandalismo",
+            "icono": "🔨",
+            "descripcion": "Daños a bienes públicos o privados",
+            "ley": "Ley 1801/2016",
+        }
+
+        VIOLENCIA_INTRAFAMILIAR = {
+            "id": "violencia_intrafamiliar_conv",
+            "nombre": "Violencia Intrafamiliar",
+            "icono": "⚠️",
+            "descripcion": "Reportes de agresiones dentro del núcleo hogar",
+            "ley": "Ley 1801/2016",
+        }
+
+        OTRO_CONVIVENCIA = {
+            "id": "otro_convivencia",
+            "nombre": "Otro (¿Cuál?)",
+            "icono": "📝",
+            "descripcion": "Campo de texto abierto para casos no tipificados",
+            "ley": "Ley 1801/2016",
+        }
+
+        @classmethod
+        def todos(cls):
+            return [
+                cls.ALTERACIONES_ORDEN,
+                cls.EXTORSION_MENOR,
+                cls.HURTO_COMERCIOS,
+                cls.HURTO_PERSONAS,
+                cls.HURTO_RESIDENCIAS,
+                cls.HURTO_VEHICULOS,
+                cls.LESIONES_PERSONALES,
+                cls.RINAS_CALLEJERAS,
+                cls.RUIDO_EXCESIVO,
+                cls.VANDALISMO,
+                cls.VIOLENCIA_INTRAFAMILIAR,
+                cls.OTRO_CONVIVENCIA,
+            ]
+
+    # ==================== DELITOS DE BAJO Y MEDIANO IMPACTO (Ley 599/2000) ====================
+    class Delitos:
+        DELITOS_SEXUALES = {
+            "id": "delitos_sexuales",
+            "nombre": "Delitos Sexuales Menores",
+            "icono": "🚫",
+            "descripcion": "Casos que requieren manejo de evidencia confidencial",
+            "ley": "Ley 599/2000",
+        }
+
+        EXTORSION = {
+            "id": "extorsion_delito",
+            "nombre": "Extorsión",
+            "icono": "💰",
+            "descripcion": "Denuncia formal para investigación institucional",
+            "ley": "Ley 599/2000",
+        }
+
+        HURTO_PERSONAS = {
+            "id": "hurto_personas_delito",
+            "nombre": "Hurto a Personas",
+            "icono": "🎯",
+            "descripcion": "Modalidades de atraco o raponazo bajo tipificación legal",
+            "ley": "Ley 599/2000",
+        }
+
+        HURTO_RESIDENCIAS = {
+            "id": "hurto_residencias_delito",
+            "nombre": "Hurto a Residencias",
+            "icono": "🏠",
+            "descripcion": "Ingreso ilegal con fines de lucro",
+            "ley": "Ley 599/2000",
+        }
+
+        HURTO_VEHICULOS = {
+            "id": "hurto_vehiculos_delito",
+            "nombre": "Hurto a Vehículos/Motocicletas",
+            "icono": "🏍️",
+            "descripcion": "Robo de vehículos motorizados para rastreo judicial",
+            "ley": "Ley 599/2000",
+        }
+
+        LESIONES_PERSONALES = {
+            "id": "lesiones_personales_delito",
+            "nombre": "Lesiones Personales",
+            "icono": "🩹",
+            "descripcion": "Agresiones físicas documentadas para procesos legales",
+            "ley": "Ley 599/2000",
+        }
+
+        VIOLENCIA_GENERO = {
+            "id": "violencia_genero",
+            "nombre": "Violencia de Género",
+            "icono": "⚧️",
+            "descripcion": "Denuncias específicas protegidas por protocolos de seguridad",
+            "ley": "Ley 599/2000",
+        }
+
+        VIOLENCIA_INTRAFAMILIAR = {
+            "id": "violencia_intrafamiliar_delito",
+            "nombre": "Violencia Intrafamiliar",
+            "icono": "⚠️",
+            "descripcion": "Escalamiento de conflictos domésticos a instancias judiciales",
+            "ley": "Ley 599/2000",
+        }
+
+        OTRO_DELITO = {
+            "id": "otro_delito",
+            "nombre": "Otro (¿Cuál?)",
+            "icono": "📝",
+            "descripcion": "Selección para delitos que no figuren en el menú principal",
+            "ley": "Ley 599/2000",
+        }
+
+        @classmethod
+        def todos(cls):
+            return [
+                cls.DELITOS_SEXUALES,
+                cls.EXTORSION,
+                cls.HURTO_PERSONAS,
+                cls.HURTO_RESIDENCIAS,
+                cls.HURTO_VEHICULOS,
+                cls.LESIONES_PERSONALES,
+                cls.VIOLENCIA_GENERO,
+                cls.VIOLENCIA_INTRAFAMILIAR,
+                cls.OTRO_DELITO,
+            ]
+
+    # ==================== TIPO DE REPORTE ====================
+    class TipoReporte:
+        RAPIDO = {
+            "id": "rapido",
+            "nombre": "Panel de Acceso Directo",
+            "descripcion": "6 categorías de mayor interés territorial",
+            "ley": None,
+        }
+        CONVIVENCIA = {
+            "id": "convivencia",
+            "nombre": "Incidentes de Convivencia",
+            "descripcion": "Ley 1801/2016 - Código de Policía",
+            "ley": "Ley 1801/2016",
+        }
+        DELITO = {
+            "id": "delito",
+            "nombre": "Delitos de Bajo/Mediano Impacto",
+            "descripcion": "Ley 599/2000 - Código Penal",
+            "ley": "Ley 599/2000",
+        }
+
+        @classmethod
+        def todos(cls):
+            return [cls.RAPIDO, cls.CONVIVENCIA, cls.DELITO]
 
     # ==================== NIVELES DE SEVERIDAD ====================
     class Severidad:
@@ -281,7 +464,34 @@ class SegmentacionReporte:
 
 
 # Mapeos para UI
-CATEGORY_EMOJI = {c["id"]: c["icono"] for c in SegmentacionReporte.Categoria.todas()}
+def get_all_categories():
+    all_cats = []
+    for c in SegmentacionReporte.Categoria.todas():
+        c_copy = c.copy()
+        all_cats.append(c_copy)
+    for c in SegmentacionReporte.Convivencia.todos():
+        c_copy = c.copy()
+        all_cats.append(c_copy)
+    for c in SegmentacionReporte.Delitos.todos():
+        c_copy = c.copy()
+        all_cats.append(c_copy)
+    return all_cats
+
+
+def get_all_incident_types():
+    types = []
+    for c in SegmentacionReporte.Convivencia.todos():
+        types.append(
+            {"id": c["id"], "nombre": c["nombre"], "icono": c["icono"], "ley": c["ley"]}
+        )
+    for c in SegmentacionReporte.Delitos.todos():
+        types.append(
+            {"id": c["id"], "nombre": c["nombre"], "icono": c["icono"], "ley": c["ley"]}
+        )
+    return types
+
+
+CATEGORY_EMOJI = {c["id"]: c["icono"] for c in get_all_categories()}
 SEVERITY_COLORS = {s["id"]: s["color"] for s in SegmentacionReporte.Severidad.todas()}
 
 
@@ -702,26 +912,41 @@ def page_dashboard():
             st.info("No hay incidentes registrados")
 
     with col_side:
-        st.markdown("#### 📋 Por Categoría")
+        st.markdown("#### 📋 Panel de Acceso Directo")
         for cat in SegmentacionReporte.Categoria.todas():
             count = stats.get("by_category", {}).get(cat["id"], 0)
             st.markdown(f"{cat['icono']} **{cat['nombre']}**: {count}")
 
+        st.markdown("#### ⚖️ Convivencia (Ley 1801)")
+        for cat in SegmentacionReporte.Convivencia.todos():
+            count = stats.get("by_category", {}).get(cat["id"], 0)
+            if count > 0:
+                st.markdown(f"{cat['icono']} **{cat['nombre']}**: {count}")
+
+        st.markdown("#### ⚖️ Delitos (Ley 599)")
+        for cat in SegmentacionReporte.Delitos.todos():
+            count = stats.get("by_category", {}).get(cat["id"], 0)
+            if count > 0:
+                st.markdown(f"{cat['icono']} **{cat['nombre']}**: {count}")
+
 
 def page_report():
     st.title("📝 Nuevo Reporte de Incidente")
-    st.markdown(
-        "### Complete el formulario según la Segmentación Estratégica de Variables"
-    )
+    st.markdown("### Segmentación Estratégica de Variables de Reporte")
+    st.markdown("*Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE*")
 
-    # Mostrar categorías disponibles
-    st.markdown("#### 📁 Seleccione la Categoría")
+    st.markdown("---")
+    st.subheader(
+        "🎯 1. Panel de Acceso Directo (Variables de Mayor Interés Territorial)"
+    )
+    st.markdown("*6 categorías de alta frecuencia de ocurrencia*")
+
     cols = st.columns(3)
     for i, cat in enumerate(SegmentacionReporte.Categoria.todas()):
         with cols[i % 3]:
             st.markdown(
                 f"""
-            <div class="category-card" style="border-left-color: {"#E53935" if cat["id"] == "seguridad" else "#1E88E5" if cat["id"] == "infraestructura" else "#43A047" if cat["id"] == "servicios" else "#8E24AA" if cat["id"] == "ambiental" else "#FB8C00" if cat["id"] == "transito" else "#E53935"}; background: #f5f5f5;">
+            <div class="category-card" style="border-left-color: #E53935; background: #FFF3E0;">
                 <b>{cat["icono"]} {cat["nombre"]}</b><br>
                 <small>{cat["descripcion"]}</small>
             </div>
@@ -730,28 +955,78 @@ def page_report():
             )
 
     with st.form("report_form", clear_on_submit=False):
-        col1, col2 = st.columns(2)
+        st.markdown("---")
+        st.subheader("📋 2. Tipo de Reporte")
 
-        with col1:
-            title = st.text_input(
-                "Título del Incidente *", placeholder="Descripción breve del incidente"
-            )
+        tipo_options = {
+            "rapido": "🎯 Panel de Acceso Directo (6 categorías principales)",
+            "convivencia": "⚖️ Incidentes de Convivencia (Ley 1801/2016)",
+            "delito": "⚖️ Delitos de Bajo/Mediano Impacto (Ley 599/2000)",
+        }
+        tipo_reporte = st.selectbox(
+            "Seleccione el tipo de reporte *",
+            list(tipo_options.keys()),
+            format_func=lambda x: tipo_options[x],
+        )
+
+        if tipo_reporte == "rapido":
+            category_options = [
+                (c["id"], c["icono"], c["nombre"])
+                for c in SegmentacionReporte.Categoria.todas()
+            ]
+            category_labels = [f"{c[1]} {c[2]}" for c in category_options]
+            category_ids = [c[0] for c in category_options]
             category = st.selectbox(
                 "Categoría *",
-                [c["id"] for c in SegmentacionReporte.Categoria.todas()],
-                format_func=lambda x: (
-                    f"{[c['icono'] for c in SegmentacionReporte.Categoria.todas() if c['id'] == x][0]} {[c['nombre'] for c in SegmentacionReporte.Categoria.todas() if c['id'] == x][0]}"
+                category_ids,
+                format_func=lambda x: next(
+                    (f"{c[1]} {c[2]}" for c in category_options if c[0] == x), ""
                 ),
             )
-            subcategoria = st.selectbox(
-                "Subcategoría",
-                [
-                    s
-                    for c in SegmentacionReporte.Categoria.todas()
-                    if c["id"] == (category or "seguridad")
-                    for s in c["subcategorias"]
-                ],
+        elif tipo_reporte == "convivencia":
+            conv_options = [
+                (c["id"], c["icono"], c["nombre"], c["ley"])
+                for c in SegmentacionReporte.Convivencia.todos()
+            ]
+            category_labels = [f"{c[1]} {c[2]}" for c in conv_options]
+            category_ids = [c[0] for c in conv_options]
+            category = st.selectbox(
+                "Tipo de Incidente de Convivencia *",
+                category_ids,
+                format_func=lambda x: next(
+                    (f"{c[1]} {c[2]}" for c in conv_options if c[0] == x), ""
+                ),
             )
+        else:
+            del_options = [
+                (c["id"], c["icono"], c["nombre"], c["ley"])
+                for c in SegmentacionReporte.Delitos.todos()
+            ]
+            category_labels = [f"{c[1]} {c[2]}" for c in del_options]
+            category_ids = [c[0] for c in del_options]
+            category = st.selectbox(
+                "Tipo de Delito *",
+                category_ids,
+                format_func=lambda x: next(
+                    (f"{c[1]} {c[2]}" for c in del_options if c[0] == x), ""
+                ),
+            )
+
+        title = st.text_input(
+            "Título del Incidente *", placeholder="Descripción breve del incidente"
+        )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            reporter = st.text_input(
+                "Reportado por *",
+                placeholder="Nombre del reportante (o 'Anónimo' para reportes comunitarios)",
+            )
+            contact = st.text_input(
+                "Contacto *", placeholder="Teléfono o email (opcional si es anónimo)"
+            )
+
+        with col2:
             severity = st.selectbox(
                 "Severidad *",
                 [s["id"] for s in SegmentacionReporte.Severidad.todas()],
@@ -759,12 +1034,6 @@ def page_report():
                     f"{[s['icono'] for s in SegmentacionReporte.Severidad.todas() if s['id'] == x][0]} {[s['nombre'] for s in SegmentacionReporte.Severidad.todas() if s['id'] == x][0]}"
                 ),
             )
-
-        with col2:
-            reporter = st.text_input(
-                "Reportado por *", placeholder="Nombre del reportante"
-            )
-            contact = st.text_input("Contacto *", placeholder="Teléfono o email")
             fuente = st.selectbox(
                 "Fuente del Reporte",
                 [f["id"] for f in SegmentacionReporte.Fuente.todas()],
@@ -772,21 +1041,6 @@ def page_report():
                     f"{[f['icono'] for f in SegmentacionReporte.Fuente.todas() if f['id'] == x][0]} {[f['nombre'] for f in SegmentacionReporte.Fuente.todas() if f['id'] == x][0]}"
                 ),
             )
-            priority = st.selectbox(
-                "Prioridad",
-                [p["id"] for p in SegmentacionReporte.Prioridad.todas()],
-                format_func=lambda x: (
-                    f"{[p['nombre'] for p in SegmentacionReporte.Prioridad.todas() if p['id'] == x][0]}"
-                ),
-            )
-
-        impact = st.selectbox(
-            "Impacto Estimado",
-            [i["id"] for i in SegmentacionReporte.Impacto.todo()],
-            format_func=lambda x: (
-                f"{[i['nombre'] for i in SegmentacionReporte.Impacto.todo() if i['id'] == x][0]} ({[i['afectados'] for i in SegmentacionReporte.Impacto.todo() if i['id'] == x][0]} afectados)"
-            ),
-        )
 
         description = st.text_area(
             "Descripción Detallada *",
@@ -794,8 +1048,14 @@ def page_report():
             placeholder="Describa el incidente con detalle...",
         )
 
+        if tipo_reporte in ["convivencia", "delito"]:
+            otro_texto = st.text_input(
+                "Especifique (si seleccionó 'Otro')",
+                placeholder="Describa el tipo de incidente...",
+            )
+
         st.markdown("---")
-        st.subheader("📍 Ubicación del Incidente")
+        st.subheader("📍 3. Ubicación del Incidente (Georreferenciación Automática)")
 
         method = st.radio(
             "Método de ubicación:",
@@ -807,7 +1067,7 @@ def page_report():
 
         if method == "🔍 Buscar dirección":
             addr = st.text_input(
-                "Dirección:", placeholder="Ej: Av. Jiménez # 4-35, Bogotá"
+                "Dirección:", placeholder="Ej: Cra 43A #1-50, Medellín"
             )
             if addr and st.form_submit_button("🔍 Buscar en Geoapify"):
                 with st.spinner("Consultando API de Geoapify..."):
@@ -883,30 +1143,39 @@ def page_report():
             )
 
         st.markdown("---")
+        st.markdown(
+            "**⏱️ Timestamp automático y georreferenciación se asignarán al enviar el reporte**"
+        )
 
         submitted = st.form_submit_button(
             "📨 Enviar Reporte", type="primary", use_container_width=True
         )
 
         if submitted:
-            if not title or not description or not reporter or not contact:
+            if not title or not description or not reporter:
                 st.error("⚠️ Complete todos los campos requeridos (*)")
             elif not st.session_state.location_confirmed:
                 st.error("⚠️ Seleccione una ubicación")
             else:
+                tipo_ley = None
+                if tipo_reporte == "convivencia":
+                    tipo_ley = "Ley 1801/2016"
+                elif tipo_reporte == "delito":
+                    tipo_ley = "Ley 599/2000"
+
                 incident = {
                     "title": title,
                     "description": description,
                     "category": category,
-                    "subcategoria": subcategoria,
+                    "tipo_reporte": tipo_reporte,
+                    "ley": tipo_ley,
                     "severity": severity,
-                    "priority": priority,
-                    "impact": impact,
                     "fuente": fuente,
                     "location": st.session_state.pending_location,
                     "reporter_name": reporter,
                     "reporter_contact": contact,
                     "status": "recibido",
+                    "timestamp": datetime.now().isoformat(),
                 }
 
                 created = storage.create(incident)
@@ -915,18 +1184,24 @@ def page_report():
 
                 st.success(f"✅ Reporte creado exitosamente!")
                 st.info(f"📋 ID del reporte: `{created['id']}`")
+                st.info(f"📜 Tipo: {tipo_reporte} | Ley: {tipo_ley}")
                 st.balloons()
 
 
 def page_map():
     st.title("🗺️ Mapa Global de Incidentes")
     st.markdown("Visualización geoespacial de todos los reportes")
+    st.markdown("*Basado en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE*")
 
-    col1, col2, col3, col4 = st.columns(4)
+    all_categories = get_all_categories()
+    cat_options = ["Todas"] + [c["id"] for c in all_categories]
+    cat_labels = ["Todas"] + [f"{c['icono']} {c['nombre']}" for c in all_categories]
+    cat_dict = dict(zip(cat_options, cat_labels))
+
+    col1, col2, col3 = st.columns(3)
     with col1:
         f_cat = st.selectbox(
-            "Categoría",
-            ["Todas"] + [c["id"] for c in SegmentacionReporte.Categoria.todas()],
+            "Categoría", cat_options, format_func=lambda x: cat_dict.get(x, x)
         )
     with col2:
         f_sev = st.selectbox(
@@ -937,11 +1212,6 @@ def page_map():
         f_stat = st.selectbox(
             "Estado", ["Todos"] + [e["id"] for e in SegmentacionReporte.Estado.todos()]
         )
-    with col4:
-        f_pri = st.selectbox(
-            "Prioridad",
-            ["Todas"] + [p["id"] for p in SegmentacionReporte.Prioridad.todas()],
-        )
 
     incidents = storage.get_all()
 
@@ -951,8 +1221,6 @@ def page_map():
         incidents = [i for i in incidents if i.get("severity") == f_sev]
     if f_stat != "Todos":
         incidents = [i for i in incidents if i.get("status") == f_stat]
-    if f_pri != "Todas":
-        incidents = [i for i in incidents if i.get("priority") == f_pri]
 
     st.markdown(f"**Total de incidentes:** {len(incidents)}")
 
@@ -1085,14 +1353,27 @@ def page_settings():
     | Tiles | Geoapify Carto |
     | Provider | ACTIVO |
     
-    **Segmentación Estratégica:**
-    - Categorías: 6
-    - Subcategorías: 48
-    - Niveles de Severidad: 4
-    - Estados: 7
-    - Prioridades: 4
-    - Fuentes: 7
-    - Impactos: 4
+    **Segmentación Estratégica (Basada en: SEGMENTACIÓN ESTRATÉGICA DE LAS VARIABLES DE REPORTE):**
+    
+    **1. Panel de Acceso Directo (Variables de Mayor Interés Territorial):** {len(SegmentacionReporte.Categoria.todas())}
+    - Hurto a Personas, Hurto a Comercios, Hurto a Vehículos
+    - Hurto a Residencias, Violencia Intrafamiliar, Extorsión
+    
+    **2. Incidentes de Convivencia (Ley 1801/2016):** {len(SegmentacionReporte.Convivencia.todos())}
+    - Alteraciones al orden público, Extorsión menor, Hurto a comercios
+    - Hurto a personas, Hurto a residencias, Hurto a vehículos
+    - Lesiones personales, Riñas callejeras, Ruido excesivo
+    - Vandalismo, Violencia intrafamiliar, Otro
+    
+    **3. Delitos de Bajo/Mediano Impacto (Ley 599/2000):** {len(SegmentacionReporte.Delitos.todos())}
+    - Delitos sexuales menores, Extorsión, Hurto a personas
+    - Hurto a residencias, Hurto a vehículos/motocicletas
+    - Lesiones personales, Violencia de género, Violencia intrafamiliar
+    - Otro
+    
+    **Niveles de Severidad:** {len(SegmentacionReporte.Severidad.todas())}
+    **Estados:** {len(SegmentacionReporte.Estado.todos())}
+    **Fuentes:** {len(SegmentacionReporte.Fuente.todas())}
     
     ---
     🛡️ SAFE Inteligencia Segura - Siempre Activa
