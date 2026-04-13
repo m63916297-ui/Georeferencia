@@ -62,7 +62,7 @@ def create_user(
         conn.commit()
         user_id = cursor.lastrowid
         conn.close()
-        
+
         user_data = {
             "id": user_id,
             "username": username,
@@ -73,16 +73,8 @@ def create_user(
             "is_active": 1,
         }
         save_to_txt(user_data)
-        
+
         return user_data
-            "id": user_id,
-            "username": username,
-            "email": email,
-            "phone": phone,
-            "full_name": full_name,
-            "created_at": created_at,
-            "is_active": 1,
-        }
     except sqlite3.IntegrityError as e:
         conn.close()
         raise Exception(f"Usuario o email ya existe: {e}")
