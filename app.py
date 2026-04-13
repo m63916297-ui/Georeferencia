@@ -1468,7 +1468,7 @@ def main():
     init_auth_session()
 
     query_params = st.query_params
-    page = query_params.get("page", "login")
+    page = query_params.get("page", "")
 
     if page == "register":
         from app.auth_pages import page_register
@@ -1477,10 +1477,13 @@ def main():
         return
 
     if page == "login":
-        from app.auth_pages import page_login
+        if st.session_state.get("logged_in"):
+            page = ""
+        else:
+            from app.auth_pages import page_login
 
-        page_login()
-        return
+            page_login()
+            return
 
     if not st.session_state.get("logged_in"):
         from app.auth_pages import page_login

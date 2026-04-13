@@ -428,13 +428,13 @@ def page_register():
                 try:
                     user = create_user(username, email, password, full_name, phone)
                     st.success("✅ ¡Cuenta creada exitosamente!")
-                    st.info("Ahora puedes iniciar sesión")
-
-                    st.markdown("---")
-                    if st.button("🔐 Ir a Login", use_container_width=True):
-                        st.rerun()
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
+
+    if "user" in locals() and user:
+        st.info("Ahora puedes iniciar sesión")
+        if st.button("🔐 Ir a Login", use_container_width=True):
+            st.switch_page("?page=login")
 
     st.markdown(
         """
