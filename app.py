@@ -23,6 +23,13 @@ import os
 import json
 import uuid
 
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from app import auth_db
+from app.auth_pages import init_auth_session, render_auth_sidebar, require_auth
+
 
 # =============================================================================
 # CONFIGURACIÓN PRINCIPAL
@@ -38,7 +45,7 @@ MAP_TILES_URL = f"https://maps.geoapify.com/v1/tile/carto/{{z}}/{{x}}/{{y}}.png?
 
 DEFAULT_MAP_CENTER = [6.2442, -75.5812]
 DEFAULT_ZOOM = 12
-DATA_FILE = "georeferencia/data/incidents.json"
+DATA_FILE = "data/incidents.json"
 
 
 # =============================================================================
@@ -1458,6 +1465,29 @@ def page_settings():
 
 def main():
     init_session()
+    init_auth_session()
+
+    query_params = st.query_params
+    page = query_params.get("page", "login")
+
+    if page == "register":
+        from app.auth_pages import page_register
+
+        page_register()
+        return
+
+    if page == "login":
+        from app.auth_pages import page_login
+
+        page_login()
+        return
+
+    if not st.session_state.get("logged_in"):
+        from app.auth_pages import page_login
+
+        page_login()
+        return
+
     render_header()
 
     if "navigate_to" in st.session_state and st.session_state.navigate_to:
@@ -1465,6 +1495,10 @@ def main():
         st.session_state.navigate_to = None
     else:
         choice = render_sidebar()
+
+    render_auth_sidebar()
+
+    require_auth()
 
     pages = {
         "🏠 Dashboard": page_dashboard,
