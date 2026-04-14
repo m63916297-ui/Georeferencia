@@ -1,8 +1,8 @@
 """
-🛡️ SAFE GeoReport - Sistema de Gestión de Incidentes
+🛡️ SAFE - Motor de Predicción de Eventos
 =====================================================
 
-Sistema de Reporte de Incidentes Georreferenciados
+Sistema de Gestión de Incidentes Georreferenciados
 Basado en: Segmentación Estratégica de Variables de Reporte
 API: Geoapify (b4be52d95c1543b99864371eb4562a37)
 
@@ -22,6 +22,18 @@ from requests.structures import CaseInsensitiveDict
 import os
 import json
 import uuid
+
+from auth_pages import (
+    auth_db,
+    init_auth_session,
+    login_user,
+    logout_user,
+    render_auth_sidebar,
+    require_auth,
+    page_login,
+    page_registro,
+    page_perfil,
+)
 
 
 # =============================================================================
@@ -692,11 +704,13 @@ def init_session():
         st.session_state.navigate_to = None
     if "last_incident_id" not in st.session_state:
         st.session_state.last_incident_id = None
+    if "mostrar_registro" not in st.session_state:
+        st.session_state.mostrar_registro = False
 
 
 def render_header():
     st.set_page_config(
-        page_title="SAFE GeoReport - Sistema de Incidentes",
+        page_title="SAFE - Motor de Predicción de Eventos",
         page_icon="🛡️",
         layout="wide",
         initial_sidebar_state="expanded",
@@ -750,8 +764,8 @@ def render_header():
         st.markdown(
             """
         <div class="safe-header">
-            <h1>🛡️ SAFE GeoReport</h1>
-            <p>Sistema de Gestión de Incidentes - Segmentación Estratégica de Variables</p>
+            <h1>🛡️ SAFE</h1>
+            <p>Motor de Predicción de Eventos - Segmentación Estratégica de Variables</p>
             <p style="font-size: 11px; color: #90CAF9;">🔗 API: https://api.geoapify.com/v1/geocode | Key: b4be52d95c1543b99864371eb4562a37</p>
         </div>
         """,
@@ -1519,6 +1533,16 @@ def page_settings():
 
 def main():
     init_session()
+    init_auth_session()
+
+    if not st.session_state.get("logged_in"):
+        render_header()
+
+        if st.session_state.get("mostrar_registro", False):
+            page_registro()
+        else:
+            page_login()
+        return
 
     render_header()
 
@@ -1528,12 +1552,15 @@ def main():
     else:
         choice = render_sidebar()
 
+    render_auth_sidebar()
+
     pages = {
         "🏠 Dashboard": page_dashboard,
         "📝 Nuevo Reporte": page_report,
         "🗺️ Mapa Global": page_map,
         "📋 Todos los Reportes": page_list,
         "📈 Analytics": page_stats,
+        "👤 Mi Perfil": page_perfil,
         "⚙️ Configuración": page_settings,
     }
 
