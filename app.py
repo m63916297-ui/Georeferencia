@@ -29,7 +29,6 @@ from auth_pages import (
     login_user,
     logout_user,
     render_auth_sidebar,
-    require_auth,
     page_login,
     page_registro,
     page_perfil,
@@ -709,52 +708,44 @@ def init_session():
 
 
 def render_header():
-    st.set_page_config(
-        page_title="SAFE - Motor de Predicción de Eventos",
-        page_icon="🛡️",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
-
     st.markdown(
         """
     <style>
     .safe-header {
-        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-        padding: 20px;
-        border-radius: 15px;
+        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+        padding: 16px 24px;
+        border-radius: 12px;
         margin-bottom: 20px;
     }
     .safe-header h1 {
         color: white;
+        font-size: 20px;
+        font-weight: 600;
         margin: 0;
     }
-    .badge {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
+    .safe-header p {
+        color: rgba(255,255,255,0.8);
+        font-size: 12px;
+        margin: 4px 0 0 0;
     }
-    .badge-provider {
-        background: linear-gradient(90deg, #4CAF50, #2E7D32);
-        color: white;
-    }
-    .badge-safe {
-        background: linear-gradient(90deg, #FF9800, #F57C00);
-        color: white;
-    }
-    .stat-box {
-        background: #f5f5f5;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-    }
-    .category-card {
-        padding: 15px;
-        border-radius: 10px;
-        margin: 5px 0;
-        border-left: 5px solid;
+    .sidebar-section {
+        font-size: 11px;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 16px 0 8px 0;
     }
     </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+    <div class="safe-header">
+        <h1>🛡️ SAFE</h1>
+        <p>Motor de Predicción de Eventos</p>
+    </div>
     """,
         unsafe_allow_html=True,
     )
@@ -783,7 +774,24 @@ def render_header():
 
 
 def render_sidebar():
-    st.sidebar.title("🗺️ Navegación")
+    st.sidebar.markdown(
+        """
+    <style>
+    .nav-item {
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 2px 0;
+        cursor: pointer;
+    }
+    .nav-item:hover {
+        background: rgba(66,165,245,0.1);
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.sidebar.markdown("### Navegación")
 
     menu = [
         "🏠 Dashboard",
@@ -794,24 +802,15 @@ def render_sidebar():
         "⚙️ Configuración",
     ]
 
-    choice = st.sidebar.radio("Menú", menu)
+    choice = st.sidebar.radio(" menu", menu, label_visibility="collapsed")
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📊 Estadísticas Rápidas")
-
     stats = storage.get_stats()
     st.sidebar.metric("Total Reportes", stats["total"])
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("""
-    ### 🛡️ SAFE Inteligencia
-    **Versión:** 2.0.0
-    
-    **API Geoapify:** ✅
-    - Geocoding: Activo
-    - Maps: Activo
-    - IP Location: Activo
-    """)
+    st.sidebar.markdown("**SAFE v2.0**")
+    st.sidebar.markdown("Geoapify API: Activo")
 
     return choice
 
@@ -1535,16 +1534,19 @@ def main():
     init_session()
     init_auth_session()
 
-    if not st.session_state.get("logged_in"):
-        render_header()
+    st.set_page_config(
+        page_title="SAFE - Motor de Predicción",
+        page_icon="🛡️",
+        layout="wide",
+        initial_sidebar_state="collapsed",
+    )
 
+    if not st.session_state.get("logged_in"):
         if st.session_state.get("mostrar_registro", False):
             page_registro()
         else:
             page_login()
         return
-
-    render_header()
 
     if "navigate_to" in st.session_state and st.session_state.navigate_to:
         choice = st.session_state.navigate_to
@@ -1552,6 +1554,7 @@ def main():
     else:
         choice = render_sidebar()
 
+    render_header()
     render_auth_sidebar()
 
     pages = {
