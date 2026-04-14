@@ -1519,31 +1519,6 @@ def page_settings():
 
 def main():
     init_session()
-    init_auth_session()
-
-    query_params = st.query_params
-    page = query_params.get("page", "")
-
-    if page == "register":
-        from app.auth_pages import page_register
-
-        page_register()
-        return
-
-    if page == "login":
-        if st.session_state.get("logged_in"):
-            page = ""
-        else:
-            from app.auth_pages import page_login
-
-            page_login()
-            return
-
-    if not st.session_state.get("logged_in"):
-        from app.auth_pages import page_login
-
-        page_login()
-        return
 
     render_header()
 
@@ -1552,10 +1527,6 @@ def main():
         st.session_state.navigate_to = None
     else:
         choice = render_sidebar()
-
-    render_auth_sidebar()
-
-    require_auth()
 
     pages = {
         "🏠 Dashboard": page_dashboard,
