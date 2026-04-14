@@ -712,30 +712,32 @@ def render_header():
         """
     <style>
     .safe-header {
-        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
-        padding: 16px 24px;
-        border-radius: 12px;
+        background: #000000;
+        padding: 14px 20px;
         margin-bottom: 20px;
     }
     .safe-header h1 {
-        color: white;
-        font-size: 20px;
-        font-weight: 600;
+        color: #FFFFFF;
+        font-size: 18px;
+        font-weight: 700;
         margin: 0;
     }
     .safe-header p {
-        color: rgba(255,255,255,0.8);
-        font-size: 12px;
-        margin: 4px 0 0 0;
-    }
-    .sidebar-section {
+        color: #999999;
         font-size: 11px;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin: 16px 0 8px 0;
+        margin: 2px 0 0 0;
     }
     </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+    <div class="safe-header">
+        <h1>🛡️ SAFE</h1>
+        <p>Motor de Predicción de Eventos</p>
+    </div>
     """,
         unsafe_allow_html=True,
     )

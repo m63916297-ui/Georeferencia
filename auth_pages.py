@@ -1,9 +1,9 @@
 """
-🛡️ SAFE - Páginas de Autenticación Minimalista
-=================================================
+🛡️ SAFE - Autenticación Minimalista
+=============================
 
-Diseño minimalista para SAFE - Motor de Predicción de Eventos
-Basado en: Azul #0D47A1, Cyan #42A5F5
+Diseño minimalista alto contraste para SAFE
+Negro sobre blanco
 
 Autor: SAFE Inteligencia Segura
 Versión: 2.0.0
@@ -21,8 +21,6 @@ USERS_FILE = "data/users.json"
 
 
 class AuthDB:
-    """Sistema de gestión de usuarios"""
-
     def __init__(self, file_path: str = USERS_FILE):
         self.file_path = file_path
         self._ensure_file()
@@ -56,11 +54,8 @@ class AuthDB:
     ) -> Optional[Dict]:
         users = self._read()
         for u in users:
-            if u.get("username") == username:
+            if u.get("username") == username or u.get("email") == email:
                 return None
-            if u.get("email") == email:
-                return None
-
         user = {
             "id": str(uuid.uuid4()),
             "username": username,
@@ -101,157 +96,112 @@ auth_db = AuthDB()
 
 
 def init_auth_session():
-    if "user_id" not in st.session_state:
-        st.session_state.user_id = None
-    if "username" not in st.session_state:
-        st.session_state.username = None
-    if "user_email" not in st.session_state:
-        st.session_state.user_email = None
-    if "user_nombre" not in st.session_state:
-        st.session_state.user_nombre = None
-    if "user_rol" not in st.session_state:
-        st.session_state.user_rol = None
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "mostrar_registro" not in st.session_state:
-        st.session_state.mostrar_registro = False
+    for key in [
+        "user_id",
+        "username",
+        "user_email",
+        "user_nombre",
+        "user_rol",
+        "logged_in",
+        "mostrar_registro",
+    ]:
+        if key not in st.session_state:
+            st.session_state[key] = None if "logged" in key else False
 
 
 def login_user(user: Dict):
-    st.session_state.user_id = user.get("id")
-    st.session_state.username = user.get("username")
-    st.session_state.user_email = user.get("email")
-    st.session_state.user_nombre = user.get("nombre")
-    st.session_state.user_rol = user.get("rol")
-    st.session_state.logged_in = True
+    for k, v in [
+        ("user_id", user.get("id")),
+        ("username", user.get("username")),
+        ("user_email", user.get("email")),
+        ("user_nombre", user.get("nombre")),
+        ("user_rol", user.get("rol")),
+        ("logged_in", True),
+    ]:
+        st.session_state[k] = v
 
 
 def logout_user():
-    st.session_state.user_id = None
-    st.session_state.username = None
-    st.session_state.user_email = None
-    st.session_state.user_nombre = None
-    st.session_state.user_rol = None
     st.session_state.logged_in = False
 
 
 def render_auth_sidebar():
     if st.session_state.get("logged_in"):
-        nombre = st.session_state.get("user_nombre", "Usuario")
         st.sidebar.markdown("---")
-        with st.sidebar.container():
-            st.sidebar.markdown(f"**{nombre}**")
-            st.sidebar.markdown(f"_{st.session_state.get('username', '')}_")
-            if st.sidebar.button("Cerrar Sesión", use_container_width=True):
-                logout_user()
-                st.rerun()
+        st.sidebar.markdown(f"**{st.session_state.get('user_nombre', 'Usuario')}**")
+        st.sidebar.markdown(f"_{st.session_state.get('username', '')}_")
+        if st.sidebar.button("Cerrar Sesión", use_container_width=True):
+            logout_user()
+            st.rerun()
 
 
 def inject_styles():
     st.markdown(
         """
     <style>
-    /* Reset y base */
-    .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-    }
+    /* Fondo blanco */
+    .stApp { background: #FFFFFF !important; }
     
-    /* Fondo minimalista */
-    .stApp {
-        background: linear-gradient(180deg, #0D47A1 0%, #1565C0 50%, #1E88E5 100%) !important;
-    }
-    
-    /* Contenedor principal */
-    .auth-container {
-        max-width: 380px;
-        margin: 0 auto;
-        padding: 48px 32px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    /* Contenedor */
+    .auth-box {
+        width: 320px;
+        margin: 60px auto;
+        background: #FFFFFF;
+        border: 2px solid #000000;
     }
     
     /* Logo */
-    .auth-logo {
-        text-align: center;
-        margin-bottom: 32px;
-    }
+    .auth-logo { text-align: center; margin-bottom: 24px; }
     .auth-logo .shield {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #0D47A1, #42A5F5);
-        border-radius: 14px;
+        width: 44px; height: 44px;
+        background: #000000;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 28px;
-        margin-bottom: 16px;
+        font-size: 22px;
+        margin-bottom: 10px;
     }
     .auth-logo h2 {
-        color: #0D47A1;
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 4px 0;
+        color: #000000; font-size: 20px;
+        font-weight: 700; margin: 0;
     }
     .auth-logo p {
-        color: #64748B;
-        font-size: 14px;
-        margin: 0;
+        color: #666666; font-size: 12px; margin: 0;
     }
     
-    /* Inputs minimalistas */
-    .auth-container .stTextInput > div > div {
-        border-radius: 8px;
-        border: 1.5px solid #E2E8F0;
-        background: #F8FAFC;
+    /* Inputs */
+    .auth-box .stTextInput > div > div {
+        border: 2px solid #000000;
+        background: #FFFFFF;
+        border-radius: 0;
     }
-    .auth-container .stTextInput > div > div:focus-within {
-        border-color: #42A5F5;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(66,165,245,0.1);
+    .auth-box .stTextInput > div > div:focus-within {
+        border-color: #000000;
     }
-    .auth-container .stTextInput label {
-        font-size: 13px;
-        font-weight: 500;
-        color: #475569;
+    .auth-box .stTextInput label {
+        font-size: 11px; font-weight: 600; color: #000000;
     }
+    .auth-box input::placeholder { color: #999999; }
     
-    /* Botón primario */
-    .auth-container .stButton > button[kind="primary"] {
-        background: #0D47A1 !important;
-        border: none !important;
-        border-radius: 8px !important;
+    /* Botones */
+    .auth-box .stButton > button[kind="primary"] {
+        background: #000000 !important;
+        border: 2px solid #000000 !important;
+        border-radius: 0 !important;
         padding: 12px !important;
-        font-weight: 500 !important;
-        width: 100%;
+        font-weight: 600 !important;
+        font-size: 12px !important;
     }
-    
-    /* Botón secundario */
-    .auth-container .stButton > button:not([kind="primary"]) {
-        background: transparent !important;
-        border: 1.5px solid #E2E8F0 !important;
-        border-radius: 8px !important;
-        padding: 12px !important;
-        color: #475569 !important;
-        width: 100%;
-    }
-    .auth-container .stButton > button:not([kind="primary"]):hover {
-        border-color: #0D47A1 !important;
-        color: #0D47A1 !important;
+    .auth-box .stButton > button:not([kind="primary"]) {
+        background: #FFFFFF !important;
+        border: 2px solid #000000 !important;
+        border-radius: 0 !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     /* Footer */
-    .auth-footer {
-        text-align: center;
-        margin-top: 24px;
-        color: #94A3B8;
-        font-size: 12px;
-    }
-    .auth-footer a {
-        color: #42A5F5;
-        text-decoration: none;
-    }
+    .auth-ft { text-align: center; margin-top: 16px; color: #999999; font-size: 10px; }
     </style>
     """,
         unsafe_allow_html=True,
@@ -260,153 +210,105 @@ def inject_styles():
 
 def page_login():
     inject_styles()
+    st.markdown('<div class="auth-box">', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        with st.container():
-            st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+    st.markdown(
+        """
+    <div class="auth-logo">
+        <div class="shield">🛡️</div>
+        <h2>SAFE</h2>
+        <p>Motor de Predicción</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
-            st.markdown(
-                """
-            <div class="auth-logo">
-                <div class="shield">🛡️</div>
-                <h2>SAFE</h2>
-                <p>Motor de Predicción de Eventos</p>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+    with st.form("login", clear_on_submit=True):
+        u = st.text_input("Usuario / Email", placeholder="user@email.com")
+        p = st.text_input("Contraseña", type="password", placeholder="••••••")
 
-            with st.form("login_form", clear_on_submit=True):
-                username = st.text_input(
-                    "Usuario o Email", placeholder="Ingrese su usuario o email"
-                )
-                password = st.text_input(
-                    "Contraseña", type="password", placeholder="••••••••"
-                )
+        c1, c2 = st.columns(2)
+        with c1:
+            s = st.form_submit_button("Entrar", use_container_width=True)
+        with c2:
+            r = st.form_submit_button("Crear cuenta", use_container_width=True)
 
-                c1, c2 = st.columns(2)
-                with c1:
-                    submit = st.form_submit_button(
-                        "Iniciar Sesión", use_container_width=True
-                    )
-                with c2:
-                    reg_btn = st.form_submit_button(
-                        "Crear Cuenta", use_container_width=True
-                    )
-
-                if submit:
-                    if not username or not password:
-                        st.error("Completa todos los campos")
-                    else:
-                        user = auth_db.authenticate(username, password)
-                        if user:
-                            login_user(user)
-                            st.rerun()
-                        else:
-                            st.error("Credenciales incorrectas")
-
-                if reg_btn:
-                    st.session_state.mostrar_registro = True
+        if s:
+            if not u or not p:
+                st.error("Complete campos")
+            else:
+                u = auth_db.authenticate(u, p)
+                if u:
+                    login_user(u)
                     st.rerun()
+                else:
+                    st.error("Credenciales inválidas")
+        if r:
+            st.session_state.mostrar_registro = True
+            st.rerun()
 
-            st.markdown(
-                """
-            <div class="auth-footer">
-                <p>🛡️SAFE Inteligencia Segura</p>
-            </div>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+    st.markdown(
+        '<div class="auth-ft">SAFE Inteligencia Segura</div></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def page_registro():
     inject_styles()
+    st.markdown('<div class="auth-box">', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        with st.container():
-            st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+    st.markdown(
+        """
+    <div class="auth-logo">
+        <div class="shield">🛡️</div>
+        <h2>Crear Cuenta</h2>
+        <p>Únete a SAFE</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
-            st.markdown(
-                """
-            <div class="auth-logo">
-                <div class="shield">🛡️</div>
-                <h2>Crear Cuenta</h2>
-                <p>Únete a SAFE</p>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+    with st.form("reg", clear_on_submit=True):
+        u = st.text_input("Usuario", placeholder="username")
+        e = st.text_input("Email", placeholder="user@mail.com")
+        n = st.text_input("Nombre", placeholder="Tu nombre")
+        p = st.text_input("Contraseña", type="password", placeholder="••••••")
+        pc = st.text_input("Confirmar", type="password", placeholder="••••••")
 
-            with st.form("registro_form", clear_on_submit=True):
-                username = st.text_input("Usuario", placeholder="Nombre de usuario")
-                email = st.text_input("Email", placeholder="correo@email.com")
-                nombre = st.text_input("Nombre", placeholder="Tu nombre (opcional)")
-                password = st.text_input(
-                    "Contraseña", type="password", placeholder="••••••••"
-                )
-                password_confirm = st.text_input(
-                    "Confirmar", type="password", placeholder="••••••••"
-                )
+        c1, c2 = st.columns(2)
+        with c1:
+            s = st.form_submit_button("Registrar", use_container_width=True)
+        with c2:
+            l = st.form_submit_button("Ya tengo cuenta", use_container_width=True)
 
-                c1, c2 = st.columns(2)
-                with c1:
-                    submit = st.form_submit_button(
-                        "Registrarse", use_container_width=True
-                    )
-                with c2:
-                    login_btn = st.form_submit_button(
-                        "Ya tengo cuenta", use_container_width=True
-                    )
-
-                if submit:
-                    if not username or not email or not password:
-                        st.error("Campos obligatorios")
-                    elif len(password) < 6:
-                        st.error("Mínimo 6 caracteres")
-                    elif password != password_confirm:
-                        st.error("Las contraseñas no coinciden")
-                    else:
-                        user = auth_db.create_user(username, email, password, nombre)
-                        if user:
-                            st.success("¡Cuenta creada!")
-                            st.session_state.mostrar_registro = False
-                            st.rerun()
-                        else:
-                            st.error("Usuario o email ya existe")
-
-                if login_btn:
+        if s:
+            if not u or not e or not p:
+                st.error("Campos obligatorios")
+            elif len(p) < 6:
+                st.error("Mín 6 caracteres")
+            elif p != pc:
+                st.error("No coinciden")
+            else:
+                if auth_db.create_user(u, e, p, n):
+                    st.success("Cuenta creada")
                     st.session_state.mostrar_registro = False
                     st.rerun()
+                else:
+                    st.error("Usuario o email existe")
+        if l:
+            st.session_state.mostrar_registro = False
+            st.rerun()
 
-            st.markdown(
-                """
-            <div class="auth-footer">
-                <p>© 2026 SAFE Inteligencia Segura</p>
-            </div>
-            </div>
-            """,
-                unsafe_allow_html=True,
-            )
+    st.markdown('<div class="auth-ft">© 2026 SAFE</div></div>', unsafe_allow_html=True)
 
 
 def page_perfil():
     if not st.session_state.get("logged_in"):
-        st.warning("Debes iniciar sesión")
         page_login()
         st.stop()
-
-    user_id = st.session_state.get("user_id")
-    user = auth_db.get_user_by_id(user_id)
-
-    if user:
+    u = auth_db.get_user_by_id(st.session_state.user_id)
+    if u:
         st.title("Mi Perfil")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"**Usuario:** {user.get('username')}")
-            st.markdown(f"**Email:** {user.get('email')}")
-        with col2:
-            st.markdown(f"**Nombre:** {user.get('nombre')}")
-            st.markdown(f"**Rol:** {user.get('rol')}")
+        st.markdown(f"**Usuario:** {u.get('username')}")
+        st.markdown(f"**Email:** {u.get('email')}")
+        st.markdown(f"**Nombre:** {u.get('nombre')}")
