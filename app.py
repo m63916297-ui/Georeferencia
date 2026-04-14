@@ -712,20 +712,20 @@ def render_header():
         """
     <style>
     .safe-header {
-        background: #000000;
-        padding: 14px 20px;
+        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+        padding: 16px 24px;
         margin-bottom: 20px;
     }
     .safe-header h1 {
-        color: #FFFFFF;
-        font-size: 18px;
+        color: #FFD700;
+        font-size: 22px;
         font-weight: 700;
         margin: 0;
     }
     .safe-header p {
-        color: #999999;
-        font-size: 11px;
-        margin: 2px 0 0 0;
+        color: #B3E5FC;
+        font-size: 12px;
+        margin: 4px 0 0 0;
     }
     </style>
     """,

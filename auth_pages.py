@@ -1,12 +1,9 @@
 """
-🛡️ SAFE - Autenticación Minimalista
-=============================
+🛡️ SAFE - Autenticación
+=====================
 
-Diseño minimalista alto contraste para SAFE
-Negro sobre blanco
-
-Autor: SAFE Inteligencia Segura
-Versión: 2.0.0
+SAFE Inteligencia Segura
+Colores: Azul #0D47A1, Cyan #42A5F5
 """
 
 import streamlit as st
@@ -139,30 +136,29 @@ def inject_styles():
     st.markdown(
         """
     <style>
-    /* Fondo blanco */
-    .stApp { background: #FFFFFF !important; }
+    /* Fondo degradado azul SAFE */
+    .stApp { background: linear-gradient(180deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%) !important; }
     
     /* Contenedor */
     .auth-box {
         width: 320px;
-        margin: 60px auto;
+        margin: 40px auto;
         background: #FFFFFF;
-        border: 2px solid #000000;
     }
     
     /* Logo */
     .auth-logo { text-align: center; margin-bottom: 24px; }
     .auth-logo .shield {
-        width: 44px; height: 44px;
-        background: #000000;
+        width: 48px; height: 48px;
+        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 24px;
         margin-bottom: 10px;
     }
     .auth-logo h2 {
-        color: #000000; font-size: 20px;
+        color: #0D47A1; font-size: 20px;
         font-weight: 700; margin: 0;
     }
     .auth-logo p {
@@ -171,37 +167,34 @@ def inject_styles():
     
     /* Inputs */
     .auth-box .stTextInput > div > div {
-        border: 2px solid #000000;
-        background: #FFFFFF;
-        border-radius: 0;
+        border: 1.5px solid #B3E5FC;
+        background: #F5F9FF;
     }
     .auth-box .stTextInput > div > div:focus-within {
-        border-color: #000000;
+        border-color: #0D47A1;
     }
     .auth-box .stTextInput label {
-        font-size: 11px; font-weight: 600; color: #000000;
+        font-size: 11px; font-weight: 600; color: #1565C0;
     }
-    .auth-box input::placeholder { color: #999999; }
+    .auth-box input::placeholder { color: #90CAF9; }
     
     /* Botones */
     .auth-box .stButton > button[kind="primary"] {
-        background: #000000 !important;
-        border: 2px solid #000000 !important;
-        border-radius: 0 !important;
+        background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%) !important;
+        border: none !important;
         padding: 12px !important;
         font-weight: 600 !important;
         font-size: 12px !important;
     }
     .auth-box .stButton > button:not([kind="primary"]) {
         background: #FFFFFF !important;
-        border: 2px solid #000000 !important;
-        border-radius: 0 !important;
-        color: #000000 !important;
+        border: 1.5px solid #0D47A1 !important;
+        color: #0D47A1 !important;
         font-weight: 600 !important;
     }
     
     /* Footer */
-    .auth-ft { text-align: center; margin-top: 16px; color: #999999; font-size: 10px; }
+    .auth-ft { text-align: center; margin-top: 16px; color: #90CAF9; font-size: 10px; }
     </style>
     """,
         unsafe_allow_html=True,
