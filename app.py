@@ -23,13 +23,6 @@ import os
 import json
 import uuid
 
-import sys
-import os
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from app import auth_db
-from app.auth_pages import init_auth_session, render_auth_sidebar, require_auth
-
 
 # =============================================================================
 # CONFIGURACIÓN PRINCIPAL
@@ -1140,17 +1133,62 @@ def page_report():
             "Título del Incidente *", placeholder="Descripción breve del incidente"
         )
 
-        col1, col2 = st.columns(2)
-        with col1:
+        description = st.text_area(
+            "Descripción Detallada *",
+            height=120,
+            placeholder="Describa el incidente con detalle...",
+        )
+
+        st.markdown("---")
+        st.subheader("📱 Datos del Reportante")
+
+        reportante_tipo = st.radio(
+            "Seleccione cómo desea identificarse:",
+            ["Nombre", "Teléfono", "Email", "Anónimo"],
+            horizontal=True,
+        )
+
+        reporter = ""
+        contact = ""
+        es_anonimo = False
+
+        if reportante_tipo == "Nombre":
             reporter = st.text_input(
-                "Reportado por *",
-                placeholder="Nombre del reportante (o 'Anónimo' para reportes comunitarios)",
+                "Nombre del Reportante *",
+                placeholder="Ingrese su nombre",
             )
             contact = st.text_input(
-                "Contacto", placeholder="Teléfono o email (opcional si es anónimo)"
+                "Contacto (opcional)",
+                placeholder="Teléfono o email",
             )
+        elif reportante_tipo == "Teléfono":
+            reporter = st.text_input(
+                "Nombre del Reportante",
+                placeholder="Su nombre (opcional)",
+            )
+            contact = st.text_input(
+                "Teléfono *",
+                placeholder="Ej: 3001234567",
+            )
+        elif reportante_tipo == "Email":
+            reporter = st.text_input(
+                "Nombre del Reportante",
+                placeholder="Su nombre (opcional)",
+            )
+            contact = st.text_input(
+                "Email *",
+                placeholder="ejemplo@correo.com",
+            )
+        elif reportante_tipo == "Anónimo":
+            reporter = "Anónimo"
+            contact = ""
+            es_anonimo = True
+            st.info("ℹ️ Su reporte será registrado de forma anónima")
 
-        with col2:
+        st.markdown("---")
+
+        col1, col2 = st.columns(2)
+        with col1:
             severity = st.selectbox(
                 "Severidad *",
                 [s["id"] for s in SegmentacionReporte.Severidad.todas()],
@@ -1158,6 +1196,7 @@ def page_report():
                     f"{[s['icono'] for s in SegmentacionReporte.Severidad.todas() if s['id'] == x][0]} {[s['nombre'] for s in SegmentacionReporte.Severidad.todas() if s['id'] == x][0]}"
                 ),
             )
+        with col2:
             fuente = st.selectbox(
                 "Fuente del Reporte",
                 [f["id"] for f in SegmentacionReporte.Fuente.todas()],
@@ -1165,12 +1204,6 @@ def page_report():
                     f"{[f['icono'] for f in SegmentacionReporte.Fuente.todas() if f['id'] == x][0]} {[f['nombre'] for f in SegmentacionReporte.Fuente.todas() if f['id'] == x][0]}"
                 ),
             )
-
-        description = st.text_area(
-            "Descripción Detallada *",
-            height=120,
-            placeholder="Describa el incidente con detalle...",
-        )
 
         st.markdown(
             "**⏱️ Timestamp automático y georreferenciación se asignarán al enviar el reporte**"
@@ -1181,11 +1214,30 @@ def page_report():
         )
 
         if submitted:
-            if not title or not description or not reporter:
-                st.error("⚠️ Complete todos los campos requeridos (*)")
-            elif not st.session_state.location_confirmed:
+            valid = True
+
+            if not title:
+                st.error("⚠️ Complete el título del incidente")
+                valid = False
+            if not description:
+                st.error("⚠️ Complete la descripción del incidente")
+                valid = False
+
+            if reportante_tipo == "Nombre" and not reporter:
+                st.error("⚠️ Complete el nombre del reportante o seleccione otra opción")
+                valid = False
+            elif reportante_tipo == "Teléfono" and not contact:
+                st.error("⚠️ Ingrese un número de teléfono")
+                valid = False
+            elif reportante_tipo == "Email" and not contact:
+                st.error("⚠️ Ingrese un correo electrónico")
+                valid = False
+
+            if not st.session_state.location_confirmed:
                 st.error("⚠️ Seleccione y confirme una ubicación")
-            else:
+                valid = False
+
+            if valid:
                 tipo_ley = None
                 if tipo_reporte == "convivencia":
                     tipo_ley = "Ley 1801/2016"
@@ -1203,6 +1255,8 @@ def page_report():
                     "location": st.session_state.pending_location,
                     "reporter_name": reporter,
                     "reporter_contact": contact,
+                    "reporter_type": reportante_tipo,
+                    "es_anonimo": es_anonimo,
                     "status": "recibido",
                     "timestamp": datetime.now().isoformat(),
                 }
